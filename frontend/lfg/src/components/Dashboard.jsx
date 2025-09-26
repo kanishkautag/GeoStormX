@@ -15,6 +15,7 @@ import {
   Users,
   List,
   Type,
+  Maximize,
   HelpCircle,
   Zap
 } from 'lucide-react';
@@ -30,6 +31,15 @@ const Dashboard = () => {
       month,
       value: Math.floor(Math.random() * 50) + 60
     }));
+  };
+   const toggleFullScreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    }
   };
 
   const generateShipmentsData = () => {
@@ -59,16 +69,14 @@ const Dashboard = () => {
   const [tasksData] = useState(generateTasksData());
 
   const sidebarItems = [
-    { icon: Home, label: 'CREATIVE TIM', isLogo: true },
     { icon: Home, label: 'DASHBOARD', active: true },
-    { icon: Grid, label: 'ICONS' },
     { icon: Map, label: 'MAP' },
     { icon: Bell, label: 'NOTIFICATIONS' },
     { icon: Users, label: 'USER PROFILE' },
     { icon: List, label: 'TABLE LIST' },
     { icon: Type, label: 'TYPOGRAPHY' },
     { icon: HelpCircle, label: 'RTL SUPPORT' },
-    { icon: Zap, label: 'UPGRADE TO PRO' }
+    { icon: Zap, label: 'PREMIUM' }
   ];
 
   const containerVariants = {
@@ -129,10 +137,22 @@ const Dashboard = () => {
             <h1>DASHBOARD</h1>
           </div>
           <div className="header-right">
+            <div className="header-right">
+  
+  {/* ADD THIS BUTTON ELEMENT */}
+  <button className="fullscreen-button" onClick={toggleFullScreen}>
+    <Maximize className="header-icon" />
+  </button>
+  
+  <div className="notification-badge">
+    {/* ... */}
+  </div>
+  <div className="user-avatar">
+    {/* ... */}
+  </div>
+</div>
             <Search className="header-icon" />
             <div className="notification-badge">
-              <TrendingUp className="header-icon" />
-              <span className="badge">5</span>
             </div>
             <div className="user-avatar">
               <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face&auto=format" alt="User" />
@@ -198,10 +218,10 @@ const Dashboard = () => {
                 <Line 
                   type="monotone" 
                   dataKey="value" 
-                  stroke="#1f6feb"
+                  stroke="#602da3"
                   strokeWidth={3}
-                  dot={{ fill: '#1f6feb', strokeWidth: 2, r: 4 }}
-                  activeDot={{ r: 6, fill: '#1f6feb' }}
+                  dot={{ fill: '#000', strokeWidth: 2, r: 4 }}
+                  activeDot={{ r: 6, fill: '#602da3' }}
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -232,7 +252,7 @@ const Dashboard = () => {
                   <Line 
                     type="monotone" 
                     dataKey="value" 
-                    stroke="#1f6feb"
+                    stroke="#602da3"
                     strokeWidth={2}
                     dot={false}
                   />
@@ -248,7 +268,7 @@ const Dashboard = () => {
                 <DollarSign />
               </div>
               <div>
-                <h3>3,500€</h3>
+                <h3>3,500â‚¬</h3>
                 <p>Daily Sales</p>
               </div>
             </div>
@@ -282,9 +302,9 @@ const Dashboard = () => {
                   <Line 
                     type="monotone" 
                     dataKey="value" 
-                    stroke="#26D0CE"
+                    stroke="#602da3"
                     strokeWidth={2}
-                    dot={{ fill: '#26D0CE', r: 3 }}
+                    dot={{ fill: '#000', r: 3 }}
                   />
                 </LineChart>
               </ResponsiveContainer>
