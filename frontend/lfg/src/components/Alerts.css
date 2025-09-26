@@ -1,0 +1,200 @@
+/* Assumes dashboard-container, sidebar, main-content, header are globally available */
+
+.alerts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 24px;
+    margin-top: 32px;
+}
+
+.alert-panel {
+    background: rgba(33, 38, 45, 0.6);
+    backdrop-filter: blur(20px);
+    border-radius: 16px;
+    padding: 24px;
+    border: 1px solid rgba(48, 54, 61, 0.5);
+}
+
+.alert-panel.full-width {
+    grid-column: 1 / -1;
+}
+
+.panel-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #F0F6FF;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(48, 54, 61, 0.5);
+}
+
+.panel-description {
+    font-size: 15px;
+    color: #8B949E;
+    margin-bottom: 24px;
+    line-height: 1.6;
+}
+
+.form-section {
+    margin-bottom: 24px;
+}
+.form-section:last-child {
+    margin-bottom: 0;
+}
+
+.form-section h3 {
+    font-size: 16px;
+    font-weight: 500;
+    color: #E2E8F0;
+    margin-bottom: 12px;
+}
+
+.input-field,
+.textarea-field {
+    width: 100%;
+    background-color: rgba(13, 17, 23, 0.5);
+    border: 1px solid rgba(48, 54, 61, 0.8);
+    border-radius: 8px;
+    padding: 12px;
+    color: #F0F6FF;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    margin-bottom: 16px;
+    transition: all 0.2s ease;
+}
+
+.input-field:focus,
+.textarea-field:focus {
+    outline: none;
+    border-color: #602da3;
+    box-shadow: 0 0 0 2px rgba(96, 45, 163, 0.5);
+}
+
+/* --- BUTTON STYLES --- */
+.btn-alert {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-color: #D73A7B; /* Theme-consistent alert color */
+    color: #F0F6FF;
+    box-shadow: 0 4px 12px rgba(215, 58, 123, 0.4);
+}
+.btn-alert:hover:not(:disabled) {
+    background-color: #c0346e;
+    transform: translateY(-2px);
+}
+.btn-alert:disabled {
+    background-color: #4b5563;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+.btn-primary {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: #602da3;
+    color: #F0F6FF;
+}
+.btn-primary:hover:not(:disabled) {
+    background: #7b4ab9;
+}
+.btn-primary:disabled {
+    background: #4b5563;
+    cursor: not-allowed;
+}
+
+.btn-secondary {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: 600;
+    border: 1px solid #602da3;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: transparent;
+    color: #F0F6FF;
+}
+.btn-secondary:hover:not(:disabled) {
+    background: rgba(96, 45, 163, 0.2);
+    border-color: #7b4ab9;
+}
+.btn-secondary:disabled {
+    background: transparent;
+    border-color: #4b5563;
+    color: #4b5563;
+    cursor: not-allowed;
+}
+
+/* Response Box Styling */
+.response-box {
+    margin-top: 16px;
+    background-color: rgba(13, 17, 23, 0.7);
+    padding: 16px;
+    border-radius: 8px;
+    border: 1px solid rgba(48, 54, 61, 0.5);
+}
+.response-box h4 {
+    font-weight: 600;
+    color: #8B949E;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+.response-box p {
+    color: #cbd5e1;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-size: 14px;
+    line-height: 1.6;
+}
+.response-box.ai-response h4 {
+    color: #a78bfa; /* Violet color for AI */
+}
+
+
+/* Notification Popup */
+.notification {
+    position: fixed;
+    top: 90px; /* Below the main navbar */
+    right: 24px;
+    padding: 16px 24px;
+    border-radius: 8px;
+    color: white;
+    z-index: 1000;
+    background: rgba(33, 38, 45, 0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid;
+    animation: fadeInDown 0.5s ease;
+}
+.notification.success {
+    border-color: rgba(38, 208, 206, 0.5);
+    color: #26D0CE;
+}
+.notification.error {
+    border-color: rgba(215, 58, 123, 0.5);
+    color: #D73A7B;
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
