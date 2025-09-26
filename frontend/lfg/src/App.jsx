@@ -1,20 +1,30 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+// 1. Import useLocation
+import { Routes, Route, useLocation } from 'react-router-dom';
 import Landing from './components/Landing';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Dashboard from './components/Dashboard';
+import Analysis from './components/Analysis';
+import Sim from './components/Sim';
 
 function App() {
+  // 2. Get the current location object
+  const location = useLocation();
+
   return (
     <div className="App">
-          <Navbar />
+        <Navbar />
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="dashboard/analysis" element={<Analysis />} />
+        <Route path="dashboard/simulation" element={<Sim />} />
         {/* Add more routes here as needed */}
       </Routes>
-      <Footer />
+      
+      {/* 3. Conditionally render the Footer */}
+      {location.pathname !== '/dashboard' && <Footer />}
     </div>
   );
 }

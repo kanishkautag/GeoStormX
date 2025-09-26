@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
+// ReferenceLine is used to mark the peak forecast time
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, AreaChart, Area, ReferenceLine } from 'recharts';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
+
 import { 
   Settings, 
   Bell, 
@@ -10,21 +13,21 @@ import {
   DollarSign, 
   CheckCircle,
   Home,
-  Grid,
   Map,
   Users,
   List,
   Type,
   Maximize,
   HelpCircle,
-  Zap
+  Zap,
+  Sigma // Using Sigma icon for the forecast
 } from 'lucide-react';
 import './Dashboard.css';
 
 const Dashboard = () => {
   const [selectedTab, setSelectedTab] = useState('Accounts');
   
-  // Mock data generators (replace with real API calls)
+  // --- MOCK DATA GENERATORS (Replace with real API calls) ---
   const generatePerformanceData = () => {
     const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
     return months.map(month => ({
@@ -63,20 +66,65 @@ const Dashboard = () => {
     }));
   };
 
+  // Mock data generator for the Kp Index Forecast (Normal Distribution)
+  const generateKpForecastData = (hours = 72) => {
+    const data = [];
+    const peakHour = 24; // The hour at which the storm is predicted to peak
+    const peakKp = 7.5;   // The max predicted Kp index
+    const baseKp = 2;     // The baseline Kp index
+    const spread = 8;     // How wide the bell curve is (standard deviation)
+
+    for (let hour = 0; hour <= hours; hour++) {
+      // Gaussian function to create the bell curve shape
+      const exponent = -Math.pow(hour - peakHour, 2) / (2 * Math.pow(spread, 2));
+      const kpIndex = baseKp + (peakKp - baseKp) * Math.exp(exponent);
+      data.push({
+        hour: hour,
+        kpIndex: kpIndex,
+      });
+    }
+    return { data, peakHour };
+  };
+
   const [performanceData] = useState(generatePerformanceData());
   const [shipmentsData] = useState(generateShipmentsData());
   const [salesData] = useState(generateSalesData());
   const [tasksData] = useState(generateTasksData());
+  const [kpForecast] = useState(generateKpForecastData());
+
+  /*
+    ******************************************************************
+    * HOW TO INTEGRATE YOUR BACKEND:
+    * 1. Replace the useState line above with this:
+    * const [kpForecast, setKpForecast] = useState({ data: [], peakHour: 0 });
+    *
+    * 2. Add a useEffect hook like this to fetch and set your data:
+    *
+    * useEffect(() => {
+    * const fetchForecastData = async () => {
+    * // const response = await fetch('your-backend-api/kp-forecast');
+    * // const backendData = await response.json();
+    * // setKpForecast(backendData); 
+    * };
+    * fetchForecastData();
+    * }, []);
+    *
+    * 3. Ensure your backend returns data in this format:
+    * {
+    * data: [ { hour: 0, kpIndex: 2.1 }, { hour: 1, kpIndex: 2.2 }, ... ],
+    * peakHour: 24 
+    * }
+    ******************************************************************
+  */
 
   const sidebarItems = [
-    { icon: Home, label: 'DASHBOARD', active: true },
-    { icon: Map, label: 'MAP' },
-    { icon: Bell, label: 'NOTIFICATIONS' },
-    { icon: Users, label: 'USER PROFILE' },
-    { icon: List, label: 'TABLE LIST' },
-    { icon: Type, label: 'TYPOGRAPHY' },
-    { icon: HelpCircle, label: 'RTL SUPPORT' },
-    { icon: Zap, label: 'PREMIUM' }
+    { icon: Home, label: 'DASHBOARD', path: '/dashboard', active: true },
+    { icon: Map, label: 'MAP', path: '/dashboard/map' },
+    { icon: HelpCircle, label: 'SIMULATION', path: '/dashboard/simulation' },
+    { icon: Bell, label: 'NOTIFICATIONS', path: '/dashboard/notifications' },
+    { icon: List, label: 'ANALYSIS', path: '/dashboard/analysis' },
+    { icon: Type, label: 'TYPOGRAPHY', path: '/dashboard/typography' },
+    { icon: Zap, label: 'PREMIUM', path: '/dashboard/premium' }
   ];
 
   const containerVariants = {
@@ -112,15 +160,16 @@ const Dashboard = () => {
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
       >
         {sidebarItems.map((item, index) => (
-          <motion.div
-            key={item.label}
-            className={`sidebar-item ${item.active ? 'active' : ''} ${item.isLogo ? 'logo' : ''}`}
-            whileHover={{ x: 5 }}
-            transition={{ type: "spring", stiffness: 400, damping: 25 }}
-          >
-            <item.icon className="sidebar-icon" />
-            <span className="sidebar-label">{item.label}</span>
-          </motion.div>
+          <Link to={item.path} key={item.label} style={{ textDecoration: 'none', color: 'inherit' }}>
+            <motion.div
+              className={`sidebar-item ${item.active ? 'active' : ''}`}
+              whileHover={{ x: 5 }}
+              transition={{ type: "spring", stiffness: 400, damping: 25 }}
+            >
+              <item.icon className="sidebar-icon" />
+              <span className="sidebar-label">{item.label}</span>
+            </motion.div>
+          </Link>
         ))}
       </motion.div>
 
@@ -137,22 +186,15 @@ const Dashboard = () => {
             <h1>DASHBOARD</h1>
           </div>
           <div className="header-right">
-            <div className="header-right">
-  
-  {/* ADD THIS BUTTON ELEMENT */}
-  <button className="fullscreen-button" onClick={toggleFullScreen}>
-    <Maximize className="header-icon" />
-  </button>
-  
-  <div className="notification-badge">
-    {/* ... */}
-  </div>
-  <div className="user-avatar">
-    {/* ... */}
-  </div>
-</div>
             <Search className="header-icon" />
+            
+            <button className="fullscreen-button" onClick={toggleFullScreen}>
+              <Maximize className="header-icon" />
+            </button>
+
             <div className="notification-badge">
+              <Bell className="header-icon" />
+              <span className="badge">5</span>
             </div>
             <div className="user-avatar">
               <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face&auto=format" alt="User" />
@@ -220,10 +262,73 @@ const Dashboard = () => {
                   dataKey="value" 
                   stroke="#602da3"
                   strokeWidth={3}
-                  dot={{ fill: '#000', strokeWidth: 2, r: 4 }}
+                  dot={{ fill: '#000', stroke: '#602da3', strokeWidth: 2, r: 4 }}
                   activeDot={{ r: 6, fill: '#602da3' }}
                 />
               </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </motion.div>
+
+        {/* Kp Index Forecast Chart */}
+        <motion.div
+          className="forecast-section"
+          variants={itemVariants}
+          initial="hidden"
+          animate="visible"
+          transition={{ delay: 0.5 }}
+        >
+          <div className="section-header">
+            <div>
+              <span className="section-subtitle">72-Hour Outlook</span>
+              <h2 className="section-title">Kp Index Forecast</h2>
+            </div>
+            <div className="card-icon shipments">
+              <Sigma />
+            </div>
+          </div>
+          <div className="chart-container">
+            <ResponsiveContainer width="100%" height={300}>
+              <AreaChart data={kpForecast.data} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="forecastGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#602da3" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="#602da3" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <XAxis 
+                  dataKey="hour"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: '#8B949E', fontSize: 12 }}
+                  tickFormatter={(value) => `${value}h`}
+                />
+                <YAxis 
+                  hide={true} 
+                  domain={[0, 9]}
+                />
+                <Tooltip
+                  cursor={{ stroke: '#602da3', strokeWidth: 1, strokeDasharray: '5 5' }}
+                  contentStyle={{
+                    background: 'rgba(33, 38, 45, 0.9)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(48, 54, 61, 0.5)',
+                    borderRadius: '8px',
+                    color: '#F0F6FF'
+                  }}
+                  formatter={(value) => [value.toFixed(2), 'Kp Index']}
+                  labelFormatter={(label) => `Hour: ${label}`}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="kpIndex" 
+                  stroke="#602da3"
+                  strokeWidth={3}
+                  fillOpacity={1}
+                  fill="url(#forecastGradient)" 
+                />
+                <ReferenceLine x={kpForecast.peakHour} stroke="#D73A7B" strokeWidth={2} strokeDasharray="3 3" />
+              </AreaChart>
             </ResponsiveContainer>
           </div>
         </motion.div>
@@ -268,7 +373,7 @@ const Dashboard = () => {
                 <DollarSign />
               </div>
               <div>
-                <h3>3,500â‚¬</h3>
+                <h3>3,500€</h3>
                 <p>Daily Sales</p>
               </div>
             </div>
@@ -302,9 +407,9 @@ const Dashboard = () => {
                   <Line 
                     type="monotone" 
                     dataKey="value" 
-                    stroke="#602da3"
+                    stroke="#26D0CE"
                     strokeWidth={2}
-                    dot={{ fill: '#000', r: 3 }}
+                    dot={{ fill: '#0D1117', r: 3, stroke: '#26D0CE', strokeWidth: 2 }}
                   />
                 </LineChart>
               </ResponsiveContainer>

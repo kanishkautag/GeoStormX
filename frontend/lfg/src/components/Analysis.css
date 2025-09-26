@@ -1,0 +1,182 @@
+/* Note: Assumes dashboard-container, sidebar, main-content, and header styles are in a shared or global CSS file. 
+   If not, copy them from Dashboard.css */
+
+.analysis-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.analysis-card {
+  background: rgba(33, 38, 45, 0.6);
+  backdrop-filter: blur(20px);
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid rgba(48, 54, 61, 0.5);
+  transition: all 0.3s ease;
+}
+
+.analysis-card.full-width {
+  grid-column: 1 / -1; /* Makes the card span the full width */
+}
+
+.card-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #8B949E;
+  margin-bottom: 24px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Radial Chart Card */
+.radial-chart-card {
+  grid-row: span 2; /* Makes this card taller */
+  display: flex;
+  flex-direction: column;
+}
+.radial-chart-container {
+  flex-grow: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.radial-chart-label {
+  position: absolute;
+  text-align: center;
+}
+.radial-value {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #F0F6FF;
+  display: block;
+}
+.radial-subtitle {
+  font-size: 14px;
+  color: #8B949E;
+}
+
+/* Key Metrics Card */
+.metric-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.metric-item:last-child {
+  margin-bottom: 0;
+}
+.metric-icon {
+  width: 24px;
+  height: 24px;
+}
+.metric-item div {
+  display: flex;
+  flex-direction: column;
+}
+.metric-item span {
+  font-size: 14px;
+  color: #8B949E;
+}
+.metric-item strong {
+  font-size: 20px;
+  font-weight: 600;
+  color: #F0F6FF;
+}
+.metric-item strong small {
+  font-size: 14px;
+  color: #8B949E;
+}
+
+/* Live Data Card */
+.live-data-list p {
+  font-size: 14px;
+  color: #F0F6FF;
+  margin-bottom: 12px;
+}
+.live-data-list p strong {
+  color: #8B949E;
+  display: inline-block;
+  width: 120px;
+}
+
+/* Asset Selector in Header */
+.asset-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(33, 38, 45, 0.8);
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(48, 54, 61, 0.5);
+  cursor: pointer;
+}
+.asset-selector span {
+  color: #8B949E;
+}
+.asset-selector strong {
+  color: #F0F6FF;
+}
+
+/* "What-If" Sliders */
+.sliders-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+}
+.slider-group {
+  display: flex;
+  flex-direction: column;
+}
+.slider-group label {
+  margin-bottom: 16px;
+  color: #8B949E;
+}
+.what-if-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  outline: none;
+}
+.what-if-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  background: #602da3;
+  cursor: pointer;
+  border-radius: 50%;
+  border: 3px solid #0D1117;
+}
+.what-if-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  background: #602da3;
+  cursor: pointer;
+  border-radius: 50%;
+  border: 3px solid #0D1117;
+}
+
+/* Responsive Grid */
+@media (max-width: 1200px) {
+  .analysis-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .radial-chart-card {
+    grid-column: 1 / -1; /* Full width on medium screens */
+    grid-row: auto;
+    min-height: 350px;
+  }
+}
+@media (max-width: 768px) {
+  .analysis-grid {
+    grid-template-columns: 1fr;
+  }
+  .sliders-container {
+    grid-template-columns: 1fr;
+  }
+}

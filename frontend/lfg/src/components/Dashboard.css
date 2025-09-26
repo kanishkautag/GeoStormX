@@ -59,12 +59,6 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.sidebar-item.logo {
-  margin-bottom: 32px;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(20px);
-}
-
 .sidebar-icon {
   width: 20px;
   height: 20px;
@@ -162,8 +156,8 @@
 
 /* Fullscreen Button */
 .fullscreen-button {
-  background: none;
-  border: none;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   cursor: pointer;
   padding: 8px;
   border-radius: 8px;
@@ -172,10 +166,12 @@
   align-items: center;
   justify-content: center;
   position: relative;
+  backdrop-filter: blur(10px);
 }
 
 .fullscreen-button:hover {
-  background: rgba(31, 111, 235, 0.1);
+  background: rgba(96, 45, 163, 0.2);
+  border-color: rgba(96, 45, 163, 0.3);
   transform: scale(1.05);
 }
 
@@ -185,6 +181,9 @@
 
 .fullscreen-button .header-icon {
   transition: all 0.3s ease;
+  width: 20px;
+  height: 20px;
+  color: #8B949E;
 }
 
 .fullscreen-button:hover .header-icon {
@@ -226,7 +225,7 @@
 .tab-button.active {
   background: #602da3;
   color: #F0F6FF;
-  box-shadow: 0 4px 12px rgba(31, 111, 235, 0.4);
+  box-shadow: 0 4px 12px rgba(96, 45, 163, 0.4);
 }
 
 .settings-icon {
@@ -243,8 +242,9 @@
   transform: rotate(45deg);
 }
 
-/* Performance Section */
-.performance-section {
+/* Chart Sections */
+.performance-section,
+.forecast-section {
   background: rgba(33, 38, 45, 0.6);
   backdrop-filter: blur(20px);
   border-radius: 16px;
@@ -263,6 +263,17 @@
   right: 0;
   height: 4px;
   background: linear-gradient(90deg, #602da3, #26D0CE, #D73A7B);
+  border-radius: 16px 16px 0 0;
+}
+
+.forecast-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #D73A7B, #602da3);
   border-radius: 16px 16px 0 0;
 }
 
@@ -335,7 +346,7 @@
 .chart-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
-  border-color: rgba(31, 111, 235, 0.3);
+  border-color: rgba(96, 45, 163, 0.3);
 }
 
 .card-header {
@@ -369,7 +380,7 @@
 }
 
 .card-icon.shipments {
-  background: rgba(31, 111, 235, 0.2);
+  background: rgba(96, 45, 163, 0.2);
   color: #602da3;
 }
 
@@ -398,9 +409,8 @@
 }
 
 .mini-chart {
-  height: 80px;
+  height: 60px;
   margin-top: 16px;
-  position: relative;
 }
 
 /* Responsive Design */
@@ -469,7 +479,7 @@
     text-align: center;
   }
   
-  .performance-section {
+  .performance-section, .forecast-section {
     padding: 20px;
   }
   
@@ -489,93 +499,15 @@
 }
 
 .main-content::-webkit-scrollbar-thumb {
-  background: rgba(31, 111, 235, 0.6);
+  background: #602da3;
   border-radius: 3px;
 }
 
 .main-content::-webkit-scrollbar-thumb:hover {
-  background: rgba(95, 27, 162, 0.8);
+  background: #7b4ab9;
 }
 
-/* Loading Animation */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.chart-card {
-  animation: fadeInUp 0.6s ease-out;
-}
-
-/* Glassmorphism Effect */
-.performance-section,
-.chart-card,
-.header,
-.tab-navigation {
-  background: rgba(33, 38, 45, 0.6);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-/* Custom Chart Styles */
+/* Recharts Custom Tooltip Styles */
 .recharts-tooltip-wrapper {
   outline: none;
-}
-
-.recharts-default-tooltip {
-  background: rgba(33, 38, 45, 0.95) !important;
-  border: 1px solid rgba(48, 54, 61, 0.5) !important;
-  border-radius: 8px !important;
-  backdrop-filter: blur(20px);
-}
-
-.recharts-tooltip-label {
-  color: #F0F6FF !important;
-  font-weight: 600 !important;
-}
-
-.recharts-tooltip-item {
-  color: #8B949E !important;
-}
-/* Fullscreen Button */
-.fullscreen-button {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 8px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  backdrop-filter: blur(10px);
-}
-
-.fullscreen-button:hover {
-  background: rgba(96, 45, 163, 0.2);
-  border-color: rgba(96, 45, 163, 0.3);
-  transform: scale(1.05);
-}
-
-.fullscreen-button:active {
-  transform: scale(0.95);
-}
-
-.fullscreen-button .header-icon {
-  transition: all 0.3s ease;
-  width: 20px;
-  height: 20px;
-  color: #8B949E;
-}
-
-.fullscreen-button:hover .header-icon {
-  color: #602da3;
 }
