@@ -97,8 +97,27 @@ const SatelliteInfo = ({ activeKp }) => (
             <p><strong>Average Cost to Build:</strong> $5,250,000</p>
             <p><strong>Estimated Premium (at Kp {activeKp}):</strong> {calculatePremium(5250000, mapKpToRiskFactor(activeKp, 'Satellite'))}</p>
         </div>
+        <div className="subsection">
+            <h3>Medium Earth Orbit (MEO)</h3>
+            <p>MEO satellites operate at altitudes between 2,000 km and 35,786 km. This orbit offers a good compromise between the large coverage area of geostationary satellites and the low latency of LEO satellites. A constellation of MEO satellites can provide continuous global coverage with fewer satellites than a LEO constellation, and with better signal strength than geostationary satellites for many applications.</p>
+            <p><strong>Average Cost to Build:</strong> $50,000,000 - $150,000,000</p>
+            <p><strong>Estimated Premium (at Kp {activeKp}):</strong> {calculatePremium(100000000, mapKpToRiskFactor(activeKp, 'Satellite'))}</p>
+        </div>
+        <div className="subsection">
+            <h3>Navigation Earth Orbit</h3>
+            <p>These satellites, typically in MEO, are the backbone of global navigation satellite systems (GNSS). They provide autonomous geo-spatial positioning with global coverage, enabling a wide range of applications from personal navigation in our smartphones to precision agriculture, autonomous vehicles, and military operations. The high reliability and long lifespan required for these satellites make them a significant investment, with complex designs and redundant systems to ensure continuous operation.</p>
+            <p><strong>Average Cost to Build:</strong> $100,000,000 - $200,000,000</p>
+            <p><strong>Estimated Premium (at Kp {activeKp}):</strong> {calculatePremium(150000000, mapKpToRiskFactor(activeKp, 'Satellite'))}</p>
+        </div>
+        <div className="subsection">
+            <h3>Weather Satellite</h3>
+            <p>Weather satellites are crucial for monitoring the Earth's weather and climate. They can be in geostationary orbit (GEO), providing a constant view of one side of the Earth, or in polar orbit, scanning the entire planet several times a day. GEO weather satellites are invaluable for tracking large-scale weather patterns like hurricanes, while polar-orbiting satellites provide the detailed data needed for numerical weather prediction models.</p>
+            <p><strong>Average Cost to Build:</strong> $200,000,000 - $400,000,000</p>
+            <p><strong>Estimated Premium (at Kp {activeKp}):</strong> {calculatePremium(300000000, mapKpToRiskFactor(activeKp, 'Satellite'))}</p>
+        </div>
         <InsuranceFormula />
     </motion.div>
+    
 );
 
 const InsuranceFormula = () => (
@@ -219,14 +238,14 @@ const Premium = () => {
         {/* --- Header --- */}
         <motion.div className="header" initial={{ y: -50, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
             <div className="header-title">
-              <h1>Premium Services</h1>
-              <p>Upgrade to access advanced risk modeling and real-time alerts.</p>
+              <h1>Advanced Risk Modelling</h1>
+              <p>Advanced risk modeling and real-time alerts.</p>
             </div>
             <KpStatus kp={liveKp} loading={loading} />
         </motion.div>
         
         {/* --- Payment & Plan Selection --- */}
-        <div className="premium-content-wrapper">
+        {/* <div className="premium-content-wrapper">
           <div className="hero-payment-section">
             <motion.div className="selected-plan-card" key={selectedPlan.id} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}>
               <div className="plan-header-main">
@@ -250,7 +269,7 @@ const Premium = () => {
                 </div>
             </motion.div>
           </div>
-        </div>
+        </div> */}
         
         {/* --- Dynamic Risk Simulation Section --- */}
         <motion.div className="info-section-container" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}>

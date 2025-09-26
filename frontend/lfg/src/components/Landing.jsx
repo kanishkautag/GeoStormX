@@ -102,7 +102,7 @@ const Landing = () => {
             />
           </div>
           <div className="info-text-wrapper">
-            <h2 className="info-title">What Are Geomagnetic Storms?</h2>
+            <h2 className="info-title">What Are Kp, IMF Bz, Solar Wind Speed and Proton Flux?</h2>
             <div className="accent-line">
               <div className="purple-line"></div>
               <div className="diamond">◆</div>
