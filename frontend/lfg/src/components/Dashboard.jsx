@@ -123,7 +123,7 @@ const Dashboard = () => {
     { icon: HelpCircle, label: 'SIMULATION', path: '/dashboard/simulation' },
     { icon: Bell, label: 'NOTIFICATIONS', path: '/dashboard/notifications' },
     { icon: List, label: 'ANALYSIS', path: '/dashboard/analysis' },
-    { icon: Type, label: 'TYPOGRAPHY', path: '/dashboard/typography' },
+    { icon: Type, label: 'ALERTS', path: '/dashboard/alerts' },
     { icon: Zap, label: 'PREMIUM', path: '/dashboard/premium' }
   ];
 
