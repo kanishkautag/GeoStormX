@@ -1,8 +1,8 @@
-import React from 'react';
 import './Landing.css';
 import earthVideo from '../assets/earth.mp4';
 import geo from '../assets/geo.jpg'
 import infra from '../assets/infra.jpg'
+import { Link } from 'react-router-dom';
 
 // No need to import images locally anymore
 
@@ -29,8 +29,8 @@ const Landing = () => {
                Solar Storms Threaten Trillions. We Insure Against Them. Next-gen risk modeling for satellites and power grids.
             </p>
             
-            <button className="join-button">Dashboard</button>
-          </div>
+<Link to="/dashboard" className="join-button">Dashboard</Link>        
+  </div>
           
           <div className="right-content">
             <div className="video-container">
