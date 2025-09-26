@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>72-Hour Kp Forecasting Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script> <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #0f172a; }
+        #map { height: 100%; min-height: 550px; border-radius: 0.75rem; }
+        .glass-panel { background: rgba(30, 41, 59, 0.6); backdrop-filter: blur(10px); border: 1px solid rgba(51, 65, 85, 0.5); }
+        .kp-value { font-size: 5rem; line-height: 1; }
+        .table-container::-webkit-scrollbar { width: 8px; }
+        .table-container::-webkit-scrollbar-track { background: #1e293b; }
+        .table-container::-webkit-scrollbar-thumb { background-color: #475569; border-radius: 4px; }
+        .time-slider { width: 100%; height: 8px; border-radius: 4px; background: #1e293b; outline: none; -webkit-appearance: none; appearance: none;}
+        .time-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 20px; height: 20px; border-radius: 50%; background: #0ea5e9; cursor: pointer; border: 2px solid #0f172a; }
+        
+        /* --- MODAL STYLES --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 50;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        .modal-content {
+            background: #1e293b; border: 1px solid #334155;
+            padding: 2rem; border-radius: 0.75rem;
+            width: 90%; max-width: 600px;
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
+        }
+        .modal-overlay.active .modal-content { transform: scale(1); }
+        #gemini-response h1, #gemini-response h2, #gemini-response h3, #gemini-response h4 { font-weight: 600; margin-top: 1rem; margin-bottom: 0.5rem; color: #94a3b8; }
+        #gemini-response p { margin-bottom: 0.5rem; color: #cbd5e1; }
+        #gemini-response ul { list-style-position: inside; margin-left: 1rem; }
+        #gemini-response li { margin-bottom: 0.25rem; }
+        #gemini-response strong { color: #67e8f9; }
+    </style>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCQENhQyw9169H1Qgh1geUA19jjO_oYa9Y&callback=initMap&v=weekly" defer></script>
+</head>
+<body class="text-slate-200">
+
+    <div id="app" class="container mx-auto p-4 md:p-6 lg:p-8 max-w-7xl">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-emerald-400 mb-2">
+                Real-time Kp Forecast
+            </h1>
+            <p class="text-slate-400">Live Geomagnetic Activity & Aurora Visibility</p>
+        </header>
+
+        <main class="grid grid-cols-1 gap-6">
+            
+            <div id="status-container" class="lg:col-span-3 text-center p-8 glass-panel rounded-xl">
+                 <div id="loader" class="flex flex-col items-center justify-center">
+                     <svg class="animate-spin h-10 w-10 text-sky-400 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                     </svg>
+                     <p class="text-lg text-slate-300">Fetching live solar data and generating forecast...</p>
+                 </div>
+                 <div id="error-message" class="hidden text-red-400">
+                     <h2 class="text-2xl font-semibold mb-2">Failed to Load Data</h2>
+                     <p id="error-details">Could not retrieve the forecast. Please try again later.</p>
+                 </div>
+            </div>
+
+            <div id="dashboard-content" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-3 glass-panel p-6 rounded-xl">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold text-slate-300">Aurora Visibility & Geomagnetic Activity</h2>
+                        <div class="flex items-center space-x-4">
+                            <span class="text-sm text-slate-400">Real-time</span>
+                            <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4 p-4 bg-slate-900/50 rounded-lg">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-sm font-medium text-slate-300">Time Control (72 Hours)</span>
+                            <span id="current-time-display" class="text-sm text-sky-400 font-mono"></span>
+                        </div>
+                        <input type="range" id="time-slider" class="time-slider" min="0" max="71" value="0" step="1">
+                        <div class="flex justify-between text-xs text-slate-500 mt-1">
+                            <span>Now</span>
+                            <span>+24h</span>
+                            <span>+48h</span>
+                            <span>+72h</span>
+                        </div>
+                        <div class="flex items-center justify-center space-x-2 sm:space-x-4 mt-3">
+                            <button id="play-btn" class="px-3 py-2 bg-sky-600 hover:bg-sky-700 rounded-lg text-sm font-medium transition-colors">
+                                ▶️ Play
+                            </button>
+                            <button id="slow-btn" class="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg text-sm font-medium transition-colors">
+                                🐢 Slow
+                            </button>
+                            <button id="reset-btn" class="px-3 py-2 bg-slate-600 hover:bg-slate-700 rounded-lg text-sm font-medium transition-colors">
+                                🔄 Reset
+                            </button>
+                            <span id="kp-display" class="text-sm font-medium px-3 py-1 bg-slate-700 rounded-lg">
+                                Kp: <span id="current-kp-value">--</span>
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div id="map"></div>
+                </div>
+
+                <div class="glass-panel p-6 rounded-xl flex flex-col justify-between items-center text-center">
+                    <div>
+                        <h2 class="text-xl font-semibold text-slate-300 mb-4">Current Forecast</h2>
+                        <p id="current-kp-official" class="kp-value font-bold text-sky-300"></p>
+                    </div>
+                    <div>
+                        <p class="text-lg"><span id="current-kp-numeric" class="font-semibold"></span> Kp</p>
+                        <p class="text-sm text-slate-400 mt-2">Geomagnetic Latitude: <span id="geo-mag-lat" class="font-mono text-emerald-400">--°</span></p>
+                        <button id="analyze-btn" class="mt-4 px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg text-sm font-medium transition-colors w-full">
+                            🛰️ Analyze Satellite Impact
+                        </button>
+                        <p id="last-updated" class="text-xs text-slate-500 mt-2">Last updated: --</p>
+                    </div>
+                </div>
+
+                <div class="glass-panel p-6 rounded-xl">
+                    <h2 class="text-xl font-semibold text-slate-300 mb-4">72-Hour Forecast</h2>
+                    <div class="table-container h-64 overflow-y-auto">
+                        <table class="w-full text-left">
+                            <thead class="sticky top-0 bg-slate-900/50">
+                                <tr>
+                                    <th class="p-3">Time (UTC)</th>
+                                    <th class="p-3 text-center">Forecast Kp</th>
+                                    <th class="p-3 text-center">Geo-Mag Lat</th>
+                                </tr>
+                            </thead>
+                            <tbody id="forecast-table-body" class="divide-y divide-slate-700"></tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="glass-panel p-6 rounded-xl">
+                    <h2 class="text-xl font-semibold text-slate-300 mb-4">24-Hour Observed Kp Index</h2>
+                    <div class="table-container h-64 overflow-y-auto">
+                        <table class="w-full text-left">
+                            <thead class="sticky top-0 bg-slate-900/50">
+                                <tr>
+                                    <th class="p-3">Time (UTC)</th>
+                                    <th class="p-3 text-center">Observed Kp</th>
+                                    <th class="p-3 text-center">Official Scale</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-table-body" class="divide-y divide-slate-700"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="gemini-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold text-slate-200">🛰️ Satellite Impact Analysis</h2>
+                <button id="close-modal-btn" class="text-2xl text-slate-400 hover:text-white">&times;</button>
+            </div>
+            <div id="gemini-loader" class="text-center py-8 hidden">
+                <svg class="animate-spin h-8 w-8 text-purple-400 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                <p class="text-slate-300">Communicating with Gemini... Analyzing risks...</p>
+            </div>
+            <div id="gemini-response" class="prose prose-invert max-w-none"></div>
+        </div>
+    </div>
+
+    <script>
+        let map, auroraOval, terminatorLine, animationTimer;
+        let isPlaying = false;
+        let fullApiData = null;
+        let animationIntervalMs = 150;
+
+        const API_URL = '/api/forecast';
+        const statusContainer = document.getElementById('status-container');
+        const dashboardContent = document.getElementById('dashboard-content');
+        const timeSlider = document.getElementById('time-slider');
+        const currentTimeDisplay = document.getElementById('current-time-display');
+        const playBtn = document.getElementById('play-btn');
+        const slowBtn = document.getElementById('slow-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const currentKpValue = document.getElementById('current-kp-value');
+        const analyzeBtn = document.getElementById('analyze-btn');
+        const geminiModal = document.getElementById('gemini-modal');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        const geminiLoader = document.getElementById('gemini-loader');
+        const geminiResponse = document.getElementById('gemini-response');
+
+        function initMap() {
+            const mapStyles = [{"elementType":"geometry","stylers":[{"color":"#242f3e"}]},{"elementType":"labels.text.stroke","stylers":[{"color":"#242f3e"}]},{"elementType":"labels.text.fill","stylers":[{"color":"#746855"}]},{"featureType":"administrative.locality","elementType":"labels.text.fill","stylers":[{"color":"#d59563"}]},{"featureType":"poi","elementType":"labels.text.fill","stylers":[{"color":"#d59563"}]},{"featureType":"poi.park","elementType":"geometry","stylers":[{"color":"#263c3f"}]},{"featureType":"poi.park","elementType":"labels.text.fill","stylers":[{"color":"#6b9a76"}]},{"featureType":"road","elementType":"geometry","stylers":[{"color":"#38414e"}]},{"featureType":"road","elementType":"geometry.stroke","stylers":[{"color":"#212a37"}]},{"featureType":"road","elementType":"labels.text.fill","stylers":[{"color":"#9ca5b3"}]},{"featureType":"road.highway","elementType":"geometry","stylers":[{"color":"#746855"}]},{"featureType":"road.highway","elementType":"geometry.stroke","stylers":[{"color":"#1f2835"}]},{"featureType":"road.highway","elementType":"labels.text.fill","stylers":[{"color":"#f3d19c"}]},{"featureType":"transit","elementType":"geometry","stylers":[{"color":"#2f3948"}]},{"featureType":"transit.station","elementType":"labels.text.fill","stylers":[{"color":"#d59563"}]},{"featureType":"water","elementType":"geometry","stylers":[{"color":"#17263c"}]},{"featureType":"water","elementType":"labels.text.fill","stylers":[{"color":"#515c6d"}]},{"featureType":"water","elementType":"labels.text.stroke","stylers":[{"color":"#17263c"}]}];
+            map = new google.maps.Map(document.getElementById('map'), { center: { lat: 50, lng: -95 }, zoom: 3, disableDefaultUI: true, zoomControl: true, styles: mapStyles });
+            initializeControls();
+            fetchData();
+        }
+
+        function initializeControls() {
+            timeSlider.addEventListener('input', (e) => updateDisplayForTimeOffset(parseInt(e.target.value)));
+            playBtn.addEventListener('click', toggleAnimation);
+            slowBtn.addEventListener('click', toggleSpeed);
+            resetBtn.addEventListener('click', resetToNow);
+            analyzeBtn.addEventListener('click', analyzeImpact);
+            closeModalBtn.addEventListener('click', () => geminiModal.classList.remove('active'));
+            geminiModal.addEventListener('click', (e) => { if (e.target === geminiModal) geminiModal.classList.remove('active'); });
+        }
+        
+        function toggleSpeed() {
+            if (animationIntervalMs === 150) {
+                animationIntervalMs = 500;
+                slowBtn.innerHTML = '⚡ Normal';
+            } else {
+                animationIntervalMs = 150;
+                slowBtn.innerHTML = '🐢 Slow';
+            }
+            if (isPlaying) {
+                clearInterval(animationTimer);
+                startAnimation();
+            }
+        }
+
+        function startAnimation() {
+            animationTimer = setInterval(() => {
+                let newValue = parseInt(timeSlider.value) + 1;
+                if (newValue > 71) newValue = 0;
+                timeSlider.value = newValue;
+                updateDisplayForTimeOffset(newValue);
+            }, animationIntervalMs);
+        }
+
+        function toggleAnimation() {
+            if (isPlaying) {
+                clearInterval(animationTimer);
+                playBtn.innerHTML = '▶️ Play';
+                isPlaying = false;
+            } else {
+                playBtn.innerHTML = '⏸️ Pause';
+                isPlaying = true;
+                startAnimation();
+            }
+        }
+
+        function resetToNow() {
+            if (isPlaying) toggleAnimation();
+            timeSlider.value = 0;
+            updateDisplayForTimeOffset(0);
+        }
+        
+        function getForecastForTimeOffset(offsetHours) {
+            if (!fullApiData || !fullApiData.forecast_72h || fullApiData.forecast_72h.length === 0) return null;
+            const index = Math.min(offsetHours, fullApiData.forecast_72h.length - 1);
+            return fullApiData.forecast_72h[index];
+        }
+
+        function updateDisplayForTimeOffset(offsetHours) {
+            const forecastPoint = getForecastForTimeOffset(offsetHours);
+            if (!forecastPoint) return;
+            const targetTime = new Date(forecastPoint.time);
+            currentTimeDisplay.textContent = targetTime.toISOString().slice(0, 16).replace('T', ' ') + ' UTC';
+            currentKpValue.textContent = forecastPoint.forecast_kp.toFixed(2);
+            updateMap(forecastPoint);
+        }
+        
+        function isOnNightSide(point, targetTime) {
+            const sunLon = (targetTime.getUTCHours() + targetTime.getUTCMinutes() / 60 - 12) * 15;
+            let pointLon = point.lng;
+            while (pointLon > 180) pointLon -= 360;
+            while (pointLon < -180) pointLon += 360;
+            let diff = pointLon - sunLon;
+            if (diff > 180) diff -= 360;
+            if (diff < -180) diff += 360;
+            return Math.abs(diff) > 90;
+        }
+
+        function updateMap(forecastPoint) {
+            if (auroraOval) auroraOval.setMap(null);
+            if (terminatorLine) terminatorLine.setMap(null);
+            const geomagLat = forecastPoint.geomagnetic_latitude;
+            const targetTime = new Date(forecastPoint.time);
+            const auroraPoints = [];
+            const poleLatRad = (80.37 * Math.PI) / 180;
+            const poleLonRad = (-72.62 * Math.PI) / 180;
+            const geomagLatRad = (geomagLat * Math.PI) / 180;
+            for (let i = -180; i <= 180; i += 5) {
+                const geomagLonRad = (i * Math.PI) / 180;
+                const latRad = Math.asin(Math.sin(poleLatRad) * Math.sin(geomagLatRad) + Math.cos(poleLatRad) * Math.cos(geomagLatRad) * Math.cos(geomagLonRad));
+                let lonRad = poleLonRad + Math.atan2(Math.cos(geomagLatRad) * Math.sin(geomagLonRad), Math.cos(poleLatRad) * Math.sin(geomagLatRad) - Math.sin(poleLatRad) * Math.cos(geomagLatRad) * Math.cos(geomagLonRad));
+                auroraPoints.push({ lat: (latRad * 180) / Math.PI, lng: (lonRad * 180) / Math.PI });
+            }
+            const nightSideAuroraPoints = auroraPoints.filter(p => isOnNightSide(p, targetTime));
+            let auroraColor = '#22c55e';
+            if (forecastPoint.forecast_kp >= 5) auroraColor = '#f59e0b';
+            if (forecastPoint.forecast_kp >= 7) auroraColor = '#ef4444';
+            if (nightSideAuroraPoints.length > 1) {
+                auroraOval = new google.maps.Polygon({ paths: nightSideAuroraPoints, strokeColor: auroraColor, strokeOpacity: 0.8, strokeWeight: 2, fillColor: auroraColor, fillOpacity: 0.3, map: map });
+            }
+            terminatorLine = new google.maps.Polyline({ path: fullApiData.solar_terminator, strokeColor: '#fbbf24', strokeOpacity: 0.5, strokeWeight: 2, map: map });
+        }
+
+        async function analyzeImpact() {
+            if (!fullApiData) return;
+            geminiResponse.innerHTML = '';
+            geminiLoader.classList.remove('hidden');
+            geminiModal.classList.add('active');
+            const currentKp = fullApiData.current_forecast.forecast_kp;
+            try {
+                const response = await fetch(`/api/impact-analysis/${currentKp}`);
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || `Server error: ${response.status}`);
+                }
+                const data = await response.json();
+                geminiResponse.innerHTML = marked.parse(data.analysis_text);
+            } catch (error) {
+                geminiResponse.innerHTML = `<p class="text-red-400"><strong>Error:</strong> ${error.message}</p>`;
+            } finally {
+                geminiLoader.classList.add('hidden');
+            }
+        }
+
+        async function fetchData() {
+            try {
+                const response = await fetch(API_URL);
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || `HTTP error! Status: ${response.status}`);
+                }
+                const data = await response.json();
+                fullApiData = data;
+                updateUI(data);
+            } catch (error) {
+                console.error("Fetch error:", error);
+                document.getElementById('loader').classList.add('hidden');
+                document.getElementById('error-details').textContent = error.message;
+                document.getElementById('error-message').classList.remove('hidden');
+            }
+        }
+
+        function updateUI(data) {
+            document.getElementById('current-kp-official').textContent = data.current_forecast.official_scale;
+            document.getElementById('current-kp-numeric').textContent = data.current_forecast.forecast_kp.toFixed(2);
+            document.getElementById('geo-mag-lat').textContent = data.current_forecast.geomagnetic_latitude.toFixed(1) + '°';
+            document.getElementById('last-updated').textContent = `Last updated: ${new Date(data.last_updated).toLocaleString()}`;
+            
+            const forecastBody = document.getElementById('forecast-table-body');
+            forecastBody.innerHTML = data.forecast_72h.map(row => `
+                <tr class="hover:bg-slate-700/50">
+                    <td class="p-3 text-sm">${new Date(row.time).toISOString().slice(0, 16).replace('T', ' ')}</td>
+                    <td class="p-3 text-center">${row.forecast_kp.toFixed(2)}</td>
+                    <td class="p-3 text-center font-mono text-emerald-400">${row.geomagnetic_latitude.toFixed(1)}°</td>
+                </tr>`).join('');
+
+            const historyBody = document.getElementById('history-table-body');
+            historyBody.innerHTML = data.historical_24h.map(row => `
+                <tr class="hover:bg-slate-700/50">
+                    <td class="p-3">${row.time}</td>
+                    <td class="p-3 text-center">${row.kp_index.toFixed(2)}</td>
+                    <td class="p-3 text-center font-semibold text-emerald-300">${row.official_scale}</td>
+                </tr>`).join('');
+            
+            updateDisplayForTimeOffset(0);
+            statusContainer.classList.add('hidden');
+            dashboardContent.classList.remove('hidden');
+        }
+        window.initMap = initMap;
+        setInterval(fetchData, 5 * 60 * 1000);
+    </script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import {React, useState, useEffect } from 'react';
 // ReferenceLine is used to mark the peak forecast time
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, AreaChart, Area, ReferenceLine } from 'recharts';
 import { motion } from 'framer-motion';
@@ -20,14 +20,17 @@ import {
   Maximize,
   HelpCircle,
   Zap,
-  Sigma // Using Sigma icon for the forecast
+  Sigma, // Using Sigma icon for the forecast
+  Plane,
+  Satellite,
+  Signal // Icon for Power Grid
 } from 'lucide-react';
 import './Dashboard.css';
 
 const Dashboard = () => {
   const [selectedTab, setSelectedTab] = useState('Accounts');
   
-  // --- MOCK DATA GENERATORS (Replace with real API calls) ---
+  // --- MOCK DATA GENERATORS (These remain for other charts) ---
   const generatePerformanceData = () => {
     const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
     return months.map(month => ({
@@ -45,77 +48,114 @@ const Dashboard = () => {
     }
   };
 
-  const generateShipmentsData = () => {
-    return Array.from({ length: 8 }, (_, i) => ({
-      period: `P${i + 1}`,
-      value: Math.floor(Math.random() * 60) + 70
-    }));
-  };
-
-  const generateSalesData = () => {
-    return Array.from({ length: 12 }, (_, i) => ({
-      period: i + 1,
-      value: Math.floor(Math.random() * 80) + 20
-    }));
-  };
-
-  const generateTasksData = () => {
-    return Array.from({ length: 10 }, (_, i) => ({
-      period: i + 1,
-      value: Math.floor(Math.random() * 60) + 40
-    }));
-  };
-
-  // Mock data generator for the Kp Index Forecast (Normal Distribution)
-  const generateKpForecastData = (hours = 72) => {
-    const data = [];
-    const peakHour = 24; // The hour at which the storm is predicted to peak
-    const peakKp = 7.5;   // The max predicted Kp index
-    const baseKp = 2;     // The baseline Kp index
-    const spread = 8;     // How wide the bell curve is (standard deviation)
-
-    for (let hour = 0; hour <= hours; hour++) {
-      // Gaussian function to create the bell curve shape
-      const exponent = -Math.pow(hour - peakHour, 2) / (2 * Math.pow(spread, 2));
-      const kpIndex = baseKp + (peakKp - baseKp) * Math.exp(exponent);
-      data.push({
-        hour: hour,
-        kpIndex: kpIndex,
-      });
+  // --- NEW: PREMIUM CALCULATION LOGIC FOR ASSET CHARTS ---
+  const calculateAssetPremium = (cost, assetType, kp) => {
+    const baseRisk = 0.005;
+    let multiplier = 1;
+    switch (assetType) {
+        case 'Satellite': multiplier = 5; break;
+        case 'Power Grid': multiplier = 4; break;
+        case 'Aviation': multiplier = 2; break;
+        default: multiplier = 1;
     }
-    return { data, peakHour };
+    const riskFactor = baseRisk + (Math.pow(kp, 2) / 81) * multiplier * 0.1;
+    
+    const pp = cost * riskFactor;
+    const rm = pp * 0.2;
+    const el = 10000 + (pp + rm) * 0.05;
+    return pp + rm + el;
   };
+
+  const generatePremiumTrend = (cost, assetType) => {
+      return Array.from({ length: 10 }, (_, kp) => ({
+          kp: kp,
+          premium: calculateAssetPremium(cost, assetType, kp)
+      }));
+  };
+  
+  // --- STATE FOR LIVE KP FORECAST & LIVE KP INDEX ---
+  const [kpForecast, setKpForecast] = useState({ data: [], peakTime: null });
+  const [isLoadingForecast, setIsLoadingForecast] = useState(true);
+  const [liveKp, setLiveKp] = useState(2); // Default to 2, then fetch real value
+
+  // --- FETCH REAL FORECAST AND LIVE KP DATA FROM NOAA ---
+  useEffect(() => {
+    const fetchForecastData = async () => {
+      setIsLoadingForecast(true);
+      try {
+        const response = await fetch('https://services.swpc.noaa.gov/products/noaa-planetary-k-index-forecast.json');
+        const rawData = await response.json();
+        
+        const dataPoints = rawData.slice(1);
+        const forecastStartIndex = dataPoints.findIndex(p => p[2] !== 'observed');
+        if (forecastStartIndex === -1) {
+          throw new Error("No forecast data available.");
+        }
+        const forecast48h = dataPoints.slice(forecastStartIndex, forecastStartIndex + 16);
+        let peakValue = 0;
+        
+        const formattedData = forecast48h.map(point => {
+          const timeUTC = new Date(point[0] + 'Z');
+          const kp = parseFloat(point[1]);
+          if (kp > peakValue) {
+            peakValue = kp;
+          }
+          return {
+            time: `${timeUTC.getUTCDate()} ${timeUTC.toLocaleString('default', { month: 'short' })} ${String(timeUTC.getUTCHours()).padStart(2, '0')}:00`,
+            kpIndex: kp,
+            type: point[2]
+          };
+        });
+
+        const peakDataPoint = formattedData.find(d => d.kpIndex === peakValue);
+        const peakTime = peakDataPoint ? peakDataPoint.time : null;
+
+        setKpForecast({ data: formattedData, peakTime });
+      } catch (error) {
+        console.error("Failed to fetch Kp forecast:", error);
+        setKpForecast({ data: [], peakTime: null });
+      } finally {
+        setIsLoadingForecast(false);
+      }
+    };
+
+    const fetchLiveKp = async () => {
+        try {
+            const response = await fetch('https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json');
+            const data = await response.json();
+            const latestKp = parseInt(data[data.length - 1][1], 10);
+            setLiveKp(latestKp);
+        } catch (error) {
+            console.error("Failed to fetch live Kp-index:", error);
+            setLiveKp(2); // Fallback on error
+        }
+    };
+
+    fetchForecastData();
+    fetchLiveKp();
+  }, []);
 
   const [performanceData] = useState(generatePerformanceData());
-  const [shipmentsData] = useState(generateShipmentsData());
-  const [salesData] = useState(generateSalesData());
-  const [tasksData] = useState(generateTasksData());
-  const [kpForecast] = useState(generateKpForecastData());
+  
+  // --- NEW: Data for asset premium charts ---
+  const [satelliteData] = useState(generatePremiumTrend(5250000, 'Satellite'));
+  const [aviationData] = useState(generatePremiumTrend(100000000, 'Aviation'));
+  const [powerGridData] = useState(generatePremiumTrend(5500000000, 'Power Grid'));
+  
+  const currentSatellitePremium = calculateAssetPremium(5250000, 'Satellite', liveKp);
+  const currentAviationPremium = calculateAssetPremium(100000000, 'Aviation', liveKp);
+  const currentPowerGridPremium = calculateAssetPremium(5500000000, 'Power Grid', liveKp);
 
-  /*
-    ******************************************************************
-    * HOW TO INTEGRATE YOUR BACKEND:
-    * 1. Replace the useState line above with this:
-    * const [kpForecast, setKpForecast] = useState({ data: [], peakHour: 0 });
-    *
-    * 2. Add a useEffect hook like this to fetch and set your data:
-    *
-    * useEffect(() => {
-    * const fetchForecastData = async () => {
-    * // const response = await fetch('your-backend-api/kp-forecast');
-    * // const backendData = await response.json();
-    * // setKpForecast(backendData); 
-    * };
-    * fetchForecastData();
-    * }, []);
-    *
-    * 3. Ensure your backend returns data in this format:
-    * {
-    * data: [ { hour: 0, kpIndex: 2.1 }, { hour: 1, kpIndex: 2.2 }, ... ],
-    * peakHour: 24 
-    * }
-    ******************************************************************
-  */
+  const formatPremium = (value) => {
+    if (value >= 1000000) {
+      return `$${(value / 1000000).toFixed(2)}M`;
+    }
+    if (value >= 1000) {
+      return `$${(value / 1000).toFixed(2)}K`;
+    }
+    return `$${value.toFixed(2)}`;
+  };
+
 
   const sidebarItems = [
     { icon: Home, label: 'DASHBOARD', path: '/dashboard', active: true },
@@ -124,7 +164,7 @@ const Dashboard = () => {
     { icon: Bell, label: 'NOTIFICATIONS', path: '/dashboard/notifications' },
     { icon: List, label: 'ANALYSIS', path: '/dashboard/analysis' },
     { icon: Type, label: 'ALERTS', path: '/dashboard/alerts' },
-    { icon: Zap, label: 'PREMIUM', path: '/dashboard/premium' }
+    { icon: Zap, label: 'INSURANCE', path: '/dashboard/premium' }
   ];
 
   const containerVariants = {
@@ -280,7 +320,7 @@ const Dashboard = () => {
         >
           <div className="section-header">
             <div>
-              <span className="section-subtitle">72-Hour Outlook</span>
+              <span className="section-subtitle">48-Hour Outlook</span>
               <h2 className="section-title">Kp Index Forecast</h2>
             </div>
             <div className="card-icon shipments">
@@ -288,130 +328,113 @@ const Dashboard = () => {
             </div>
           </div>
           <div className="chart-container">
-            <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={kpForecast.data} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="forecastGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#602da3" stopOpacity={0.8}/>
-                    <stop offset="95%" stopColor="#602da3" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <XAxis 
-                  dataKey="hour"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: '#8B949E', fontSize: 12 }}
-                  tickFormatter={(value) => `${value}h`}
-                />
-                <YAxis 
-                  hide={true} 
-                  domain={[0, 9]}
-                />
-                <Tooltip
-                  cursor={{ stroke: '#602da3', strokeWidth: 1, strokeDasharray: '5 5' }}
-                  contentStyle={{
-                    background: 'rgba(33, 38, 45, 0.9)',
-                    backdropFilter: 'blur(10px)',
-                    border: '1px solid rgba(48, 54, 61, 0.5)',
-                    borderRadius: '8px',
-                    color: '#F0F6FF'
-                  }}
-                  formatter={(value) => [value.toFixed(2), 'Kp Index']}
-                  labelFormatter={(label) => `Hour: ${label}`}
-                />
-                <Area 
-                  type="monotone" 
-                  dataKey="kpIndex" 
-                  stroke="#602da3"
-                  strokeWidth={3}
-                  fillOpacity={1}
-                  fill="url(#forecastGradient)" 
-                />
-                <ReferenceLine x={kpForecast.peakHour} stroke="#D73A7B" strokeWidth={2} strokeDasharray="3 3" />
-              </AreaChart>
-            </ResponsiveContainer>
+            {isLoadingForecast ? (
+              <div style={{ textAlign: 'center', color: '#8B949E' }}>Loading Forecast Data...</div>
+            ) : (
+              <ResponsiveContainer width="100%" height={300}>
+                <AreaChart data={kpForecast.data} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="forecastGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#602da3" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="#602da3" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <XAxis 
+                    dataKey="time"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: '#8B949E', fontSize: 12 }}
+                    interval="preserveStartEnd"
+                  />
+                  <YAxis hide={true} domain={[0, 9]} />
+                  <Tooltip
+                    cursor={{ stroke: '#602da3', strokeWidth: 1, strokeDasharray: '5 5' }}
+                    contentStyle={{
+                      background: 'rgba(33, 38, 45, 0.9)',
+                      backdropFilter: 'blur(10px)',
+                      border: '1px solid rgba(48, 54, 61, 0.5)',
+                      borderRadius: '8px',
+                      color: '#F0F6FF'
+                    }}
+                    formatter={(value) => [value.toFixed(2), 'Kp Index']}
+                    labelFormatter={(label) => `Time: ${label} UTC`}
+                  />
+                  <Area type="monotone" dataKey="kpIndex" stroke="#602da3" strokeWidth={3} fillOpacity={1} fill="url(#forecastGradient)" />
+                  {kpForecast.peakTime && (
+                    <ReferenceLine x={kpForecast.peakTime} stroke="#D73A7B" strokeWidth={2} strokeDasharray="3 3" />
+                  )}
+                </AreaChart>
+              </ResponsiveContainer>
+            )}
           </div>
         </motion.div>
 
-        {/* Bottom Charts */}
+        {/* MODIFIED: Bottom Charts now show asset premiums */}
         <motion.div 
           className="bottom-charts"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
         >
-          {/* Total Shipments */}
-          <motion.div className="chart-card" variants={itemVariants}>
-            <div className="card-header">
-              <div className="card-icon shipments">
-                <Package />
-              </div>
-              <div>
-                <h3>763,215</h3>
-                <p>Total Shipments</p>
-              </div>
-            </div>
-            <div className="mini-chart">
-              <ResponsiveContainer width="100%" height={60}>
-                <LineChart data={shipmentsData}>
-                  <Line 
-                    type="monotone" 
-                    dataKey="value" 
-                    stroke="#602da3"
-                    strokeWidth={2}
-                    dot={false}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </motion.div>
-
-          {/* Daily Sales */}
-          <motion.div className="chart-card" variants={itemVariants}>
-            <div className="card-header">
-              <div className="card-icon sales">
-                <DollarSign />
-              </div>
-              <div>
-                <h3>3,500€</h3>
-                <p>Daily Sales</p>
-              </div>
-            </div>
-            <div className="mini-chart">
-              <ResponsiveContainer width="100%" height={60}>
-                <BarChart data={salesData}>
-                  <Bar 
-                    dataKey="value" 
-                    fill="#D73A7B"
-                    radius={[2, 2, 0, 0]}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </motion.div>
-
-          {/* Completed Tasks */}
+          {/* Satellite Premium */}
           <motion.div className="chart-card" variants={itemVariants}>
             <div className="card-header">
               <div className="card-icon tasks">
-                <CheckCircle />
+                <Satellite />
               </div>
               <div>
-                <h3>12,100K</h3>
-                <p>Completed Tasks</p>
+                <h3>{formatPremium(currentSatellitePremium)}</h3>
+                <p>Satellite Premium (Kp: {liveKp})</p>
               </div>
             </div>
             <div className="mini-chart">
               <ResponsiveContainer width="100%" height={60}>
-                <LineChart data={tasksData}>
-                  <Line 
-                    type="monotone" 
-                    dataKey="value" 
-                    stroke="#26D0CE"
-                    strokeWidth={2}
-                    dot={{ fill: '#0D1117', r: 3, stroke: '#26D0CE', strokeWidth: 2 }}
-                  />
-                </LineChart>
+                <AreaChart data={satelliteData}>
+                  <Tooltip contentStyle={{ display: 'none' }} cursor={false} />
+                  <Area type="monotone" dataKey="premium" stroke="#26D0CE" fill="#26D0CE" fillOpacity={0.2} strokeWidth={2} />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </motion.div>
+
+          {/* Aviation Premium */}
+          <motion.div className="chart-card" variants={itemVariants}>
+            <div className="card-header">
+              <div className="card-icon sales">
+                <Plane />
+              </div>
+              <div>
+                <h3>{formatPremium(currentAviationPremium)}</h3>
+                <p>Aviation Premium (Kp: {liveKp})</p>
+              </div>
+            </div>
+            <div className="mini-chart">
+              <ResponsiveContainer width="100%" height={60}>
+                 <AreaChart data={aviationData}>
+                    <Tooltip contentStyle={{ display: 'none' }} cursor={false} />
+                    <Area type="monotone" dataKey="premium" stroke="#D73A7B" fill="#D73A7B" fillOpacity={0.2} strokeWidth={2}/>
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </motion.div>
+
+          {/* Power Grid Premium */}
+          <motion.div className="chart-card" variants={itemVariants}>
+            <div className="card-header">
+              <div className="card-icon shipments">
+                <Signal />
+              </div>
+              <div>
+                <h3>{formatPremium(currentPowerGridPremium)}</h3>
+                <p>Power Grid Premium (Kp: {liveKp})</p>
+              </div>
+            </div>
+            <div className="mini-chart">
+              <ResponsiveContainer width="100%" height={60}>
+                <AreaChart data={powerGridData}>
+                    <Tooltip contentStyle={{ display: 'none' }} cursor={false} />
+                    <Area type="monotone" dataKey="premium" stroke="#602da3" fill="#602da3" fillOpacity={0.2} strokeWidth={2}/>
+                </AreaChart>
               </ResponsiveContainer>
             </div>
           </motion.div>

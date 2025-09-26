@@ -1,10 +1,30 @@
-/* Assumes dashboard-container, sidebar, main-content, header are globally available */
+/* This file styles the content within the Alerts page */
+
+.page-container {
+    padding: 32px;
+    margin-top: 70px;
+}
+
+.header {
+    margin-bottom: 32px;
+}
+
+.header-title h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0;
+    color: #F0F6FF;
+}
+
+.header-title p {
+    margin: 4px 0 0 0;
+    color: #8B949E;
+}
 
 .alerts-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
     gap: 24px;
-    margin-top: 32px;
 }
 
 .alert-panel {
@@ -15,29 +35,67 @@
     border: 1px solid rgba(48, 54, 61, 0.5);
 }
 
-.alert-panel.full-width {
-    grid-column: 1 / -1;
-}
-
 .panel-title {
     font-size: 20px;
     font-weight: 600;
     color: #F0F6FF;
-    margin-bottom: 16px;
+    margin-bottom: 24px;
     display: flex;
     align-items: center;
     gap: 12px;
-    padding-bottom: 12px;
+    padding-bottom: 16px;
     border-bottom: 1px solid rgba(48, 54, 61, 0.5);
 }
 
-.panel-description {
-    font-size: 15px;
-    color: #8B949E;
-    margin-bottom: 24px;
-    line-height: 1.6;
+/* Alerts Feed Styling */
+.alerts-feed {
+    max-height: 600px; /* Adjust height as needed */
+    overflow-y: auto;
+    padding-right: 10px;
 }
 
+.alert-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background-color: rgba(13, 17, 23, 0.5);
+    border: 1px solid rgba(48, 54, 61, 0.5);
+    border-radius: 8px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.alert-item:hover {
+    background-color: rgba(48, 54, 61, 0.4);
+    border-color: #602da3;
+}
+
+.alert-item.selected {
+    background-color: rgba(96, 45, 163, 0.2);
+    border-color: #7b4ab9;
+    box-shadow: 0 0 0 2px rgba(96, 45, 163, 0.5);
+}
+
+.alert-icon {
+    flex-shrink: 0;
+    color: #f0ad4e; /* Warning color */
+}
+
+.alert-content .alert-title {
+    font-weight: 600;
+    color: #F0F6FF;
+    margin: 0 0 4px 0;
+}
+
+.alert-content .alert-timestamp {
+    font-size: 12px;
+    color: #8B949E;
+    margin: 0;
+}
+
+/* Form & Composer Styling */
 .form-section {
     margin-bottom: 24px;
 }
@@ -52,7 +110,6 @@
     margin-bottom: 12px;
 }
 
-.input-field,
 .textarea-field {
     width: 100%;
     background-color: rgba(13, 17, 23, 0.5);
@@ -62,82 +119,40 @@
     color: #F0F6FF;
     font-family: 'Inter', sans-serif;
     font-size: 14px;
-    margin-bottom: 16px;
     transition: all 0.2s ease;
 }
 
-.input-field:focus,
 .textarea-field:focus {
     outline: none;
     border-color: #602da3;
     box-shadow: 0 0 0 2px rgba(96, 45, 163, 0.5);
 }
 
-/* --- BUTTON STYLES --- */
-.btn-alert {
-    width: 100%;
-    padding: 12px;
-    border-radius: 8px;
-    font-weight: 700;
-    font-size: 16px;
-    border: none;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    background-color: #D73A7B; /* Theme-consistent alert color */
-    color: #F0F6FF;
-    box-shadow: 0 4px 12px rgba(215, 58, 123, 0.4);
-}
-.btn-alert:hover:not(:disabled) {
-    background-color: #c0346e;
-    transform: translateY(-2px);
-}
-.btn-alert:disabled {
-    background-color: #4b5563;
-    cursor: not-allowed;
-    box-shadow: none;
-    transform: none;
+.action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 16px;
 }
 
-.btn-primary {
+.btn-primary, .btn-alert {
     width: 100%;
     padding: 12px;
     border-radius: 8px;
     font-weight: 600;
+    font-size: 15px;
     border: none;
     cursor: pointer;
     transition: all 0.3s ease;
-    background: #602da3;
-    color: #F0F6FF;
-}
-.btn-primary:hover:not(:disabled) {
-    background: #7b4ab9;
-}
-.btn-primary:disabled {
-    background: #4b5563;
-    cursor: not-allowed;
 }
 
-.btn-secondary {
-    width: 100%;
-    padding: 12px;
-    border-radius: 8px;
-    font-weight: 600;
-    border: 1px solid #602da3;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    background: transparent;
-    color: #F0F6FF;
-}
-.btn-secondary:hover:not(:disabled) {
-    background: rgba(96, 45, 163, 0.2);
-    border-color: #7b4ab9;
-}
-.btn-secondary:disabled {
-    background: transparent;
-    border-color: #4b5563;
-    color: #4b5563;
-    cursor: not-allowed;
-}
+.btn-primary { background: #602da3; color: #F0F6FF; }
+.btn-primary:hover:not(:disabled) { background: #7b4ab9; transform: translateY(-1px); }
+.btn-primary:disabled { background: #4b5563; cursor: not-allowed; }
+
+.btn-alert { background-color: #D73A7B; color: #F0F6FF; }
+.btn-alert:hover:not(:disabled) { background-color: #c0346e; transform: translateY(-1px); }
+.btn-alert:disabled { background-color: #4b5563; cursor: not-allowed; }
 
 /* Response Box Styling */
 .response-box {
@@ -146,11 +161,13 @@
     padding: 16px;
     border-radius: 8px;
     border: 1px solid rgba(48, 54, 61, 0.5);
+    max-height: 250px;
+    overflow-y: auto;
 }
 .response-box h4 {
     font-weight: 600;
     color: #8B949E;
-    margin-bottom: 8px;
+    margin: 0 0 8px 0;
     font-size: 14px;
 }
 .response-box p {
@@ -159,42 +176,29 @@
     word-break: break-word;
     font-size: 14px;
     line-height: 1.6;
+    margin: 0;
 }
 .response-box.ai-response h4 {
-    color: #a78bfa; /* Violet color for AI */
+    color: #a78bfa; /* Violet for AI */
 }
-
 
 /* Notification Popup */
 .notification {
     position: fixed;
-    top: 90px; /* Below the main navbar */
+    top: 90px;
     right: 24px;
     padding: 16px 24px;
     border-radius: 8px;
-    color: white;
     z-index: 1000;
     background: rgba(33, 38, 45, 0.8);
     backdrop-filter: blur(10px);
     border: 1px solid;
     animation: fadeInDown 0.5s ease;
 }
-.notification.success {
-    border-color: rgba(38, 208, 206, 0.5);
-    color: #26D0CE;
-}
-.notification.error {
-    border-color: rgba(215, 58, 123, 0.5);
-    color: #D73A7B;
-}
+.notification.success { border-color: rgba(38, 208, 206, 0.5); color: #26D0CE; }
+.notification.error { border-color: rgba(215, 58, 123, 0.5); color: #D73A7B; }
 
 @keyframes fadeInDown {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
 }

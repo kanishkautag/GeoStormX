@@ -1,219 +1,169 @@
-import React, { useState } from 'react';
-import { NavLink } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import {
-  Home,
-  Inspect,
-  SlidersHorizontal,
-  Zap,
-  Bell,
-  MessageSquare,
-  Phone,
-  Cpu,
-  Siren // New icon for the Alerts page
-} from 'lucide-react';
+import { Bell, FileText, Bot, Send, AlertTriangle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+
+// Make sure the path to your alerts.json file is correct
+import alertsData from './alerts.json'; 
 import './Alerts.css';
 
+// Helper function to parse a concise title from the full alert message
+const parseAlertTitle = (message) => {
+    const lines = message.split('\r\n');
+    const titleLine = lines.find(line => 
+        line.startsWith('ALERT:') || 
+        line.startsWith('WARNING:') || 
+        line.startsWith('WATCH:') ||
+        line.startsWith('SUMMARY:')
+    );
+    return titleLine ? titleLine.replace(/ALERT:|WARNING:|WATCH:|SUMMARY:/, '').trim() : 'General Alert';
+};
+
+
 const Alerts = () => {
-    // State management from your teammate's App.jsx
-    const [smsTo, setSmsTo] = useState('');
-    const [smsBody, setSmsBody] = useState('');
-    const [callTo, setCallTo] = useState('');
-    const [query, setQuery] = useState('');
-    const [assistantResponse, setAssistantResponse] = useState('');
-    const [lastAlert, setLastAlert] = useState(null);
-    const [loading, setLoading] = useState(false);
-    const [notification, setNotification] = useState({ message: '', type: '' });
+    const [alerts, setAlerts] = useState([]);
+    const [selectedAlert, setSelectedAlert] = useState(null);
+    const [customMessage, setCustomMessage] = useState('');
+    const [aiResponse, setAiResponse] = useState('');
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [notification, setNotification] = useState({ show: false, message: '', type: '' });
 
-    // --- Configuration ---
-    const API_BASE_URL = 'http://localhost:8000';
+    useEffect(() => {
+        setAlerts(alertsData);
+        // Pre-select the most recent alert
+        if (alertsData.length > 0) {
+            setSelectedAlert(alertsData[0]);
+        }
+    }, []);
 
-    // --- Helper Functions ---
     const showNotification = (message, type) => {
-        setNotification({ message, type });
-        setTimeout(() => setNotification({ message: '', type: '' }), 5000);
+        setNotification({ show: true, message, type });
+        setTimeout(() => {
+            setNotification({ show: false, message: '', type: '' });
+        }, 4000);
     };
 
-    // --- API Handlers from App.jsx ---
-    const handleTriggerStorm = async () => {
-        setLoading(true);
-        setLastAlert(null);
-        try {
-            const stormData = { region: "North America", severity: "severe", kp_index: 8 };
-            const response = await fetch(`${API_BASE_URL}/trigger-storm-alert`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(stormData),
-            });
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.detail || 'Failed to trigger alert');
-            }
-            const result = await response.json();
-            showNotification(`Alert successfully sent to ${result.messages_sent} customer(s)!`, 'success');
-            setLastAlert(result);
-        } catch (error) {
-            showNotification(error.message, 'error');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleSendSms = async (e) => {
+    const handleAnalyze = (e) => {
         e.preventDefault();
-        setLoading(true);
-        try {
-            const response = await fetch(`${API_BASE_URL}/send-sms`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ to: smsTo, body: smsBody }),
-            });
-            if (!response.ok) throw new Error((await response.json()).detail || 'Failed to send SMS');
-            const result = await response.json();
-            showNotification(`SMS sent successfully! SID: ${result.sid}`, 'success');
-            setSmsTo('');
-            setSmsBody('');
-        } catch (error) {
-            showNotification(error.message, 'error');
-        } finally {
-            setLoading(false);
-        }
-    };
-    
-    const handleMakeCall = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        try {
-            const response = await fetch(`${API_BASE_URL}/make-call`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ to: callTo }),
-            });
-             if (!response.ok) throw new Error((await response.json()).detail || 'Failed to make call');
-            const result = await response.json();
-            showNotification(`Call initiated successfully! SID: ${result.sid}`, 'success');
-            setCallTo('');
-        } catch (error) {
-            showNotification(error.message, 'error');
-        } finally {
-            setLoading(false);
-        }
+        if (!selectedAlert) return;
+
+        setIsAnalyzing(true);
+        setAiResponse('');
+
+        // Simulate AI analysis with a delay
+        setTimeout(() => {
+            const impacts = selectedAlert.message.split('Potential Impacts:')[1] || 'No specific impacts listed.';
+            const serialMatch = selectedAlert.message.match(/Serial Number: (\d+)/);
+            const serialNumber = serialMatch ? serialMatch[1] : 'N/A';
+            const draft = `**AI Impact Analysis & Notification Draft:**\n\nBased on NOAA Alert (Serial: ${serialNumber}), the primary concern is **${parseAlertTitle(selectedAlert.message)}**. \n\n**Potential Impacts:**\n${impacts.trim()}\n\n**Recommendation:**\nMonitor affected systems. A detailed notification has been drafted below for stakeholder communication.`;
+            
+            setAiResponse(draft);
+            setIsAnalyzing(false);
+            
+            const initialDraft = `To All Stakeholders,\n\nPlease be advised of the following space weather event:\n\n**Event:** ${parseAlertTitle(selectedAlert.message)}\n**Details:** A space weather event is currently active, with potential impacts including: ${impacts.trim()}\n\nOur teams are actively monitoring the situation. Further updates will be provided as necessary.\n\nRegards,\nOperations Team`;
+            setCustomMessage(initialDraft);
+
+        }, 2000);
     };
 
-    const handleAskAssistant = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        setAssistantResponse('');
-        try {
-            const response = await fetch(`${API_BASE_URL}/ask-assistant`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ query }),
-            });
-            if (!response.ok) throw new Error((await response.json()).detail || 'Failed to get response');
-            const result = await response.json();
-            setAssistantResponse(result.response);
-        } catch (error) {
-            showNotification(error.message, 'error');
-        } finally {
-            setLoading(false);
+    const handleSend = () => {
+        if (!customMessage) {
+            showNotification('Cannot send an empty notification.', 'error');
+            return;
         }
+        console.log("--- Sending Notification ---", customMessage);
+        showNotification('Notification sent successfully!', 'success');
+        setCustomMessage('');
+        setAiResponse('');
     };
-
-    // Sidebar items to match the rest of your dashboard
-    const sidebarItems = [
-        { icon: Home, label: 'DASHBOARD', path: '/dashboard' },
-        { icon: Inspect, label: 'ANALYSIS', path: '/dashboard/analysis' },
-        { icon: SlidersHorizontal, label: 'SIMULATION', path: '/dashboard/simulation' },
-        { icon: Siren, label: 'ALERTS', path: '/dashboard/alerts', active: true },
-        { icon: Zap, label: 'PREMIUM', path: '/premium' },
-    ];
 
     return (
-        <div className="dashboard-container">
-            {/* Notification Popup */}
-            {notification.message && (
+        <div className="page-container">
+            {notification.show && (
                 <div className={`notification ${notification.type}`}>
                     {notification.message}
                 </div>
             )}
-
-            {/* Sidebar */}
-            <motion.div className="sidebar" initial={{ x: -250 }} animate={{ x: 0 }} transition={{ type: "spring", stiffness: 300, damping: 30 }}>
-                {sidebarItems.map((item) => (
-                    <NavLink to={item.path} key={item.label} className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                        <motion.div whileHover={{ x: 5 }}>
-                            <item.icon className="sidebar-icon" />
-                            <span className="sidebar-label">{item.label}</span>
-                        </motion.div>
-                    </NavLink>
-                ))}
-            </motion.div>
-
-            {/* Main Content */}
-            <div className="main-content">
-                <motion.div className="header" initial={{ y: -50, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
-                    <div className="header-left"><h1>Alerts & Communications</h1></div>
-                </motion.div>
-
-                <div className="alerts-grid">
-                    {/* Storm Alert Panel */}
-                    <motion.div className="alert-panel full-width" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-                        <h2 className="panel-title"><Siren /> Emergency Alert System</h2>
-                        <p className="panel-description">
-                            Simulate a severe solar storm event to generate and dispatch AI-curated insurance alerts to affected clients via SMS.
-                        </p>
-                        <button onClick={handleTriggerStorm} disabled={loading} className="btn-alert">
-                            {loading ? 'Dispatching Alerts...' : 'Trigger Severe Storm Alert'}
-                        </button>
-                        {lastAlert && (
-                            <div className="response-box">
-                                <h4>Last Alert Dispatched:</h4>
-                                <p><strong>Message Sent:</strong> "{lastAlert.message_body}"</p>
-                                <p><strong>Recipients:</strong> {lastAlert.messages_sent}</p>
-                            </div>
-                        )}
-                    </motion.div>
-
-                    {/* Communications Panel */}
-                    <motion.div className="alert-panel" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-                        <h2 className="panel-title"><MessageSquare /> Manual Communications</h2>
-                        <form onSubmit={handleSendSms} className="form-section">
-                            <h3>Send an SMS</h3>
-                            <input type="tel" value={smsTo} onChange={(e) => setSmsTo(e.target.value)} placeholder="To Phone Number (e.g., +14155552671)" className="input-field" />
-                            <textarea value={smsBody} onChange={(e) => setSmsBody(e.target.value)} placeholder="Your message here..." rows="3" className="textarea-field"></textarea>
-                            <button type="submit" disabled={loading} className="btn-primary">
-                                {loading ? 'Sending...' : 'Send SMS'}
-                            </button>
-                        </form>
-                        <form onSubmit={handleMakeCall} className="form-section">
-                            <h3>Make a Call</h3>
-                            <input type="tel" value={callTo} onChange={(e) => setCallTo(e.target.value)} placeholder="To Phone Number (e.g., +14155552671)" className="input-field" />
-                            <button type="submit" disabled={loading} className="btn-secondary">
-                                {loading ? 'Calling...' : 'Make Call'}
-                            </button>
-                        </form>
-                    </motion.div>
-
-                    {/* AI Assistant Panel */}
-                    <motion.div className="alert-panel" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-                        <h2 className="panel-title"><Cpu /> AI Assistant</h2>
-                        <form onSubmit={handleAskAssistant} className="form-section">
-                            <h3>Ask Gemini</h3>
-                            <textarea value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Ask about storm impact, insurance clauses, etc..." rows="5" className="textarea-field"></textarea>
-                            <button type="submit" disabled={loading} className="btn-primary">
-                                {loading ? 'Thinking...' : 'Ask Assistant'}
-                            </button>
-                        </form>
-                        {assistantResponse && (
-                            <div className="response-box ai-response">
-                                <h4>Gemini's Response:</h4>
-                                <p>{assistantResponse}</p>
-                            </div>
-                        )}
-                    </motion.div>
+            <div className="header">
+                <div className="header-title">
+                    <h1>Real-Time Notifications</h1>
+                    <p>Monitor and respond to live space weather alerts from NOAA.</p>
                 </div>
             </div>
+
+            <motion.div 
+                className="alerts-grid"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+            >
+                {/* Panel 1: Recent Alerts Feed */}
+                <div className="alert-panel">
+                    <h2 className="panel-title"><Bell /> Recent NOAA Alerts</h2>
+                    <div className="alerts-feed">
+                        {alerts.slice(0, 10).map((alert, index) => (
+                            <div 
+                                key={index} 
+                                className={`alert-item ${selectedAlert && selectedAlert.message === alert.message ? 'selected' : ''}`}
+                                onClick={() => setSelectedAlert(alert)}
+                            >
+                                <div className="alert-icon"><AlertTriangle size={20} /></div>
+                                <div className="alert-content">
+                                    <p className="alert-title">{parseAlertTitle(alert.message)}</p>
+                                    <p className="alert-timestamp">{new Date(alert.issue_datetime).toLocaleString()}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Panel 2: AI Analysis & Notification Composer */}
+                <div className="alert-panel">
+                    <h2 className="panel-title"><Send /> Notification Composer</h2>
+                    
+                    <div className="form-section">
+                        <h3>Selected Alert Details</h3>
+                        <div className="response-box">
+                            {selectedAlert ? (
+                                <>
+                                    <h4>{parseAlertTitle(selectedAlert.message)}</h4>
+                                    <p>{selectedAlert.message}</p>
+                                </>
+                            ) : (
+                                <p>Select an alert from the feed to begin.</p>
+                            )}
+                        </div>
+                    </div>
+                    
+                    {aiResponse && (
+                        <div className="form-section">
+                            <div className="response-box ai-response">
+                                <h4><Bot size={16} /> AI Analysis</h4>
+                                <p>{aiResponse}</p>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="form-section">
+                        <h3>Draft Notification</h3>
+                        <textarea
+                            className="textarea-field"
+                            rows="8"
+                            placeholder="Add your message or let the AI draft one for you..."
+                            value={customMessage}
+                            onChange={(e) => setCustomMessage(e.target.value)}
+                        />
+                    </div>
+                    
+                    <div className="action-buttons">
+                        <button className="btn-primary" onClick={handleAnalyze} disabled={!selectedAlert || isAnalyzing}>
+                            {isAnalyzing ? 'Analyzing...' : 'Analyze & Draft Notification'}
+                        </button>
+                        <button className="btn-alert" onClick={handleSend} disabled={!customMessage}>
+                            Send Notification
+                        </button>
+                    </div>
+                </div>
+            </motion.div>
         </div>
     );
 };
