@@ -8,6 +8,7 @@ import Dashboard from './components/Dashboard';
 import Analysis from './components/Analysis';
 import Sim from './components/Sim';
 import Premium from './components/Premium';
+import About from './components/About';
 
 function App() {
   // 2. Get the current location object
@@ -18,6 +19,7 @@ function App() {
         <Navbar />
       <Routes>
         <Route path="/" element={<Landing />} />
+        <Route path="/about" element={<About />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="dashboard/analysis" element={<Analysis />} />
         <Route path="dashboard/simulation" element={<Sim />} />

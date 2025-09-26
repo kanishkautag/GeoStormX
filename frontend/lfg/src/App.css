@@ -70,3 +70,13 @@
 ::-webkit-scrollbar-thumb:hover {
   background-color: #7b4ab9;
 }
+
+::selection {
+  background-color: #602da3; /* Your desired purple highlight */
+  color: #ffffff;             /* White text for contrast */
+}
+
+::-moz-selection {
+  background-color: #602da3; /* For Firefox compatibility */
+  color: #ffffff;
+}

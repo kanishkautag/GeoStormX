@@ -4,7 +4,7 @@
   background-color: #000000;
   color: rgba(255, 255, 255, 0.8);
   font-family: 'Space Mono', monospace;
-  padding: 80px 0 20px 0;
+  padding: 30px 0 20px 0;
   border-top: 1px solid rgba(96, 45, 163, 0.4); /* Purple accent line */
   position: relative;
   width: 100%;
@@ -34,7 +34,7 @@
 
 .footer-description {
   font-size: 14px;
-  line-height: 1.6;
+  line-height: 1.1;
   max-width: 250px;
 }
 
