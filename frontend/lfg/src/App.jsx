@@ -11,7 +11,7 @@ function App() {
           <Navbar />
       <Routes>
         <Route path="/" element={<Landing />} />
-        <Route path="/" element={<Dashboard />} />
+        <Route path="/dashboard" element={<Dashboard />} />
         {/* Add more routes here as needed */}
       </Routes>
       <Footer />

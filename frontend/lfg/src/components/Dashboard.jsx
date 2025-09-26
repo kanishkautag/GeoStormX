@@ -1,234 +1,298 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
+import { motion } from 'framer-motion';
 import { 
-  createTheme, 
-  ThemeProvider, 
-  CssBaseline, 
-  Box, 
-  Container, 
-  Grid, 
-  Paper, 
-  Typography, 
-  Tabs, 
-  Tab,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow
-} from '@mui/material';
-import { SatelliteAlt, Warning, BarChart, TravelExplore } from '@mui/icons-material';
+  Settings, 
+  Bell, 
+  Search, 
+  TrendingUp, 
+  Package, 
+  DollarSign, 
+  CheckCircle,
+  Home,
+  Grid,
+  Map,
+  Users,
+  List,
+  Type,
+  HelpCircle,
+  Zap
+} from 'lucide-react';
 import './Dashboard.css';
 
-// 1. DEFINE THE CUSTOM THEME TO MATCH YOUR LANDING PAGE
-const darkTheme = createTheme({
-  palette: {
-    mode: 'dark',
-    primary: {
-      main: '#602da3', // Your core purple
-    },
-    background: {
-      default: '#000000', // Black background
-      paper: '#1a1a1a',   // Dark grey for cards and surfaces
-    },
-    text: {
-      primary: '#ffffff',
-      secondary: 'rgba(255, 255, 255, 0.7)',
-    },
-  },
-  typography: {
-    fontFamily: "'Space Mono', monospace",
-    h4: {
-      fontWeight: 700,
-    },
-    h5: {
-      fontWeight: 700,
-      fontSize: '1.75rem'
-    },
-    body1: {
-      fontSize: '1rem',
-    }
-  },
-});
-
-// 2. PLACEHOLDER DATA (TO BE REPLACED BY API CALLS)
-const initialSummaryData = {
-  threatLevel: 'Elevated',
-  activeAlerts: 3,
-  portfolioRisk: '1.25%',
-  nextForecast: '24h 15m'
-};
-
-const initialLiveFeed = [
-  { metric: 'Solar Wind Speed', value: '520.4 km/s', status: 'normal' },
-  { metric: 'Proton Flux (>10 MeV)', value: '15 pfu', status: 'warning' },
-  { metric: 'Kp Index (Geomagnetic)', value: '4 (Unsettled)', status: 'normal' },
-  { metric: 'IMF Bz', value: '-3.2 nT', status: 'normal' },
-];
-
-const initialPortfolioAssets = [
-  { id: 'SAT-A01', type: 'LEO Comms', status: 'Nominal', risk: '0.8%', premium: '$1,200/mo' },
-  { id: 'SAT-B03', type: 'GEO Imaging', status: 'High Risk', risk: '3.1%', premium: '$4,500/mo' },
-  { id: 'GRID-US-E1', type: 'Power Grid', status: 'Alert', risk: '2.5%', premium: '$15,000/mo' },
-  { id: 'SAT-C12', type: 'LEO Weather', status: 'Nominal', risk: '0.5%', premium: '$950/mo' },
-];
-
-// Helper component for Tab Panels
-function TabPanel(props) {
-  const { children, value, index, ...other } = props;
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`dashboard-tabpanel-${index}`}
-      aria-labelledby={`dashboard-tab-${index}`}
-      {...other}
-    >
-      {value === index && (
-        <Box sx={{ p: 3 }}>
-          {children}
-        </Box>
-      )}
-    </div>
-  );
-}
-
 const Dashboard = () => {
-  const [activeTab, setActiveTab] = useState(0);
+  const [selectedTab, setSelectedTab] = useState('Accounts');
   
-  // State for all dynamic data
-  const [summaryData] = useState(initialSummaryData);
-  const [liveFeed] = useState(initialLiveFeed);
-  const [portfolioAssets] = useState(initialPortfolioAssets);
+  // Mock data generators (replace with real API calls)
+  const generatePerformanceData = () => {
+    const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+    return months.map(month => ({
+      month,
+      value: Math.floor(Math.random() * 50) + 60
+    }));
+  };
 
-  const handleTabChange = (event, newValue) => {
-    setActiveTab(newValue);
+  const generateShipmentsData = () => {
+    return Array.from({ length: 8 }, (_, i) => ({
+      period: `P${i + 1}`,
+      value: Math.floor(Math.random() * 60) + 70
+    }));
+  };
+
+  const generateSalesData = () => {
+    return Array.from({ length: 12 }, (_, i) => ({
+      period: i + 1,
+      value: Math.floor(Math.random() * 80) + 20
+    }));
+  };
+
+  const generateTasksData = () => {
+    return Array.from({ length: 10 }, (_, i) => ({
+      period: i + 1,
+      value: Math.floor(Math.random() * 60) + 40
+    }));
+  };
+
+  const [performanceData] = useState(generatePerformanceData());
+  const [shipmentsData] = useState(generateShipmentsData());
+  const [salesData] = useState(generateSalesData());
+  const [tasksData] = useState(generateTasksData());
+
+  const sidebarItems = [
+    { icon: Home, label: 'CREATIVE TIM', isLogo: true },
+    { icon: Home, label: 'DASHBOARD', active: true },
+    { icon: Grid, label: 'ICONS' },
+    { icon: Map, label: 'MAP' },
+    { icon: Bell, label: 'NOTIFICATIONS' },
+    { icon: Users, label: 'USER PROFILE' },
+    { icon: List, label: 'TABLE LIST' },
+    { icon: Type, label: 'TYPOGRAPHY' },
+    { icon: HelpCircle, label: 'RTL SUPPORT' },
+    { icon: Zap, label: 'UPGRADE TO PRO' }
+  ];
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        type: "spring",
+        stiffness: 300,
+        damping: 24
+      }
+    }
   };
 
   return (
-    <ThemeProvider theme={darkTheme}>
-      <CssBaseline />
-      <Box className="dashboard-container">
-        <Container maxWidth="xl">
-          <Typography variant="h4" gutterBottom sx={{ mb: 4, letterSpacing: '1px' }}>
-            ◆ Operator Dashboard
-          </Typography>
+    <div className="dashboard-container">
+      {/* Sidebar */}
+      <motion.div 
+        className="sidebar"
+        initial={{ x: -250 }}
+        animate={{ x: 0 }}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+      >
+        {sidebarItems.map((item, index) => (
+          <motion.div
+            key={item.label}
+            className={`sidebar-item ${item.active ? 'active' : ''} ${item.isLogo ? 'logo' : ''}`}
+            whileHover={{ x: 5 }}
+            transition={{ type: "spring", stiffness: 400, damping: 25 }}
+          >
+            <item.icon className="sidebar-icon" />
+            <span className="sidebar-label">{item.label}</span>
+          </motion.div>
+        ))}
+      </motion.div>
 
-          {/* === SUMMARY CARDS === */}
-          <Grid container spacing={4} sx={{ mb: 5 }}>
-            <Grid item lg={3} sm={6} xs={12}>
-              <Paper className="stat-card">
-                <Warning className="stat-icon" />
-                <Typography variant="h6" color="textSecondary">Threat Level</Typography>
-                <Typography variant="h5">{summaryData.threatLevel}</Typography>
-              </Paper>
-            </Grid>
-            <Grid item lg={3} sm={6} xs={12}>
-              <Paper className="stat-card">
-                <SatelliteAlt className="stat-icon" />
-                <Typography variant="h6" color="textSecondary">Active Alerts</Typography>
-                <Typography variant="h5">{summaryData.activeAlerts}</Typography>
-              </Paper>
-            </Grid>
-            <Grid item lg={3} sm={6} xs={12}>
-              <Paper className="stat-card">
-                <BarChart className="stat-icon" />
-                <Typography variant="h6" color="textSecondary">Portfolio Risk</Typography>
-                <Typography variant="h5">{summaryData.portfolioRisk}</Typography>
-              </Paper>
-            </Grid>
-            <Grid item lg={3} sm={6} xs={12}>
-              <Paper className="stat-card">
-                <TravelExplore className="stat-icon" />
-                <Typography variant="h6" color="textSecondary">Next Forecast</Typography>
-                <Typography variant="h5">{summaryData.nextForecast}</Typography>
-              </Paper>
-            </Grid>
-          </Grid>
-          
-          {/* === TABS & PANELS === */}
-          <Paper sx={{ width: '100%' }}>
-            <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-              <Tabs 
-                value={activeTab} 
-                onChange={handleTabChange} 
-                aria-label="dashboard data tabs"
-                variant="fullWidth"
-              >
-                <Tab label="Live Space Weather" />
-                <Tab label="Risk Analysis & Graphs" />
-                <Tab label="Portfolio Management" />
-              </Tabs>
-            </Box>
+      {/* Main Content */}
+      <div className="main-content">
+        {/* Header */}
+        <motion.div 
+          className="header"
+          initial={{ y: -50, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.2 }}
+        >
+          <div className="header-left">
+            <h1>DASHBOARD</h1>
+          </div>
+          <div className="header-right">
+            <Search className="header-icon" />
+            <div className="notification-badge">
+              <TrendingUp className="header-icon" />
+              <span className="badge">5</span>
+            </div>
+            <div className="user-avatar">
+              <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face&auto=format" alt="User" />
+            </div>
+          </div>
+        </motion.div>
 
-            <TabPanel value={activeTab} index={0}>
-              <Typography variant="h6" sx={{mb: 2}}>Live Data Feed</Typography>
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Metric</TableCell>
-                      <TableCell>Current Value</TableCell>
-                      <TableCell>Status</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {liveFeed.map((row) => (
-                      <TableRow key={row.metric}>
-                        <TableCell>{row.metric}</TableCell>
-                        <TableCell>{row.value}</TableCell>
-                        <TableCell>
-                          <span className={`status-pill status-${row.status}`}>{row.status}</span>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </TabPanel>
+        {/* Tab Navigation */}
+        <motion.div 
+          className="tab-navigation"
+          initial={{ y: -30, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.3 }}
+        >
+          {['Accounts', 'Purchases', 'Sessions'].map((tab) => (
+            <button
+              key={tab}
+              className={`tab-button ${selectedTab === tab ? 'active' : ''}`}
+              onClick={() => setSelectedTab(tab)}
+            >
+              {tab}
+            </button>
+          ))}
+          <Settings className="settings-icon" />
+        </motion.div>
 
-            <TabPanel value={activeTab} index={1}>
-              <Box sx={{ minHeight: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Typography color="textSecondary">
-                  Graphs, probability distributions, and forecast models will be displayed here in real-time.
-                </Typography>
-              </Box>
-            </TabPanel>
+        {/* Performance Chart */}
+        <motion.div 
+          className="performance-section"
+          variants={itemVariants}
+          initial="hidden"
+          animate="visible"
+          transition={{ delay: 0.4 }}
+        >
+          <div className="section-header">
+            <div>
+              <span className="section-subtitle">Total Shipments</span>
+              <h2 className="section-title">Performance</h2>
+            </div>
+            <div className="chart-tooltip">
+              <span className="tooltip-month">JUL</span>
+              <span className="tooltip-dataset">My First dataset: 75</span>
+            </div>
+          </div>
+          <div className="chart-container">
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={performanceData}>
+                <XAxis 
+                  dataKey="month" 
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: '#8B949E', fontSize: 12 }}
+                />
+                <YAxis hide />
+                <Tooltip 
+                  contentStyle={{
+                    background: '#21262D',
+                    border: 'none',
+                    borderRadius: '8px',
+                    color: '#F0F6FF'
+                  }}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="value" 
+                  stroke="#1f6feb"
+                  strokeWidth={3}
+                  dot={{ fill: '#1f6feb', strokeWidth: 2, r: 4 }}
+                  activeDot={{ r: 6, fill: '#1f6feb' }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </motion.div>
 
-            <TabPanel value={activeTab} index={2}>
-              <Typography variant="h6" sx={{mb: 2}}>Insured Asset Portfolio</Typography>
-                <TableContainer>
-                  <Table>
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>Asset ID</TableCell>
-                        <TableCell>Type</TableCell>
-                        <TableCell>Status</TableCell>
-                        <TableCell>Calculated Risk</TableCell>
-                        <TableCell>Insurance Premium</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {portfolioAssets.map((asset) => (
-                        <TableRow key={asset.id} hover>
-                          <TableCell>{asset.id}</TableCell>
-                          <TableCell>{asset.type}</TableCell>
-                          <TableCell>
-                            <span className={`status-pill status-${asset.status.toLowerCase().replace(' ', '-')}`}>{asset.status}</span>
-                          </TableCell>
-                          <TableCell>{asset.risk}</TableCell>
-                          <TableCell>{asset.premium}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-              </TableContainer>
-            </TabPanel>
-          </Paper>
+        {/* Bottom Charts */}
+        <motion.div 
+          className="bottom-charts"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          {/* Total Shipments */}
+          <motion.div className="chart-card" variants={itemVariants}>
+            <div className="card-header">
+              <div className="card-icon shipments">
+                <Package />
+              </div>
+              <div>
+                <h3>763,215</h3>
+                <p>Total Shipments</p>
+              </div>
+            </div>
+            <div className="mini-chart">
+              <ResponsiveContainer width="100%" height={60}>
+                <LineChart data={shipmentsData}>
+                  <Line 
+                    type="monotone" 
+                    dataKey="value" 
+                    stroke="#1f6feb"
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </motion.div>
 
-        </Container>
-      </Box>
-    </ThemeProvider>
+          {/* Daily Sales */}
+          <motion.div className="chart-card" variants={itemVariants}>
+            <div className="card-header">
+              <div className="card-icon sales">
+                <DollarSign />
+              </div>
+              <div>
+                <h3>3,500€</h3>
+                <p>Daily Sales</p>
+              </div>
+            </div>
+            <div className="mini-chart">
+              <ResponsiveContainer width="100%" height={60}>
+                <BarChart data={salesData}>
+                  <Bar 
+                    dataKey="value" 
+                    fill="#D73A7B"
+                    radius={[2, 2, 0, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </motion.div>
+
+          {/* Completed Tasks */}
+          <motion.div className="chart-card" variants={itemVariants}>
+            <div className="card-header">
+              <div className="card-icon tasks">
+                <CheckCircle />
+              </div>
+              <div>
+                <h3>12,100K</h3>
+                <p>Completed Tasks</p>
+              </div>
+            </div>
+            <div className="mini-chart">
+              <ResponsiveContainer width="100%" height={60}>
+                <LineChart data={tasksData}>
+                  <Line 
+                    type="monotone" 
+                    dataKey="value" 
+                    stroke="#26D0CE"
+                    strokeWidth={2}
+                    dot={{ fill: '#26D0CE', r: 3 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </motion.div>
+        </motion.div>
+      </div>
+    </div>
   );
 };
 
