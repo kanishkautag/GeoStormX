@@ -1,0 +1,378 @@
+.premium-page-container {
+  background: #0D1117;
+  color: #F0F6FF;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  min-height: 100vh;
+  padding-top: 100px;
+  padding-bottom: 40px;
+}
+
+.premium-page-container .main-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.premium-content-wrapper {
+  margin-top: 32px;
+}
+
+/* Header Adjustments */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+  padding: 16px;
+  background: rgba(33, 38, 45, 0.6);
+  backdrop-filter: blur(20px);
+  border-radius: 12px;
+  border: 1px solid rgba(48, 54, 61, 0.5);
+}
+
+.currency-toggle-button {
+  background: rgba(33, 38, 45, 0.8);
+  border: 1px solid rgba(48, 54, 61, 0.5);
+  border-radius: 8px;
+  padding: 10px 18px;
+  color: #F0F6FF;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.currency-toggle-button:hover {
+  background: rgba(48, 54, 61, 0.9);
+  border-color: #602da3;
+}
+
+/* --- Hero Selected Plan & Payment Section --- */
+.hero-payment-section {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 24px;
+  align-items: start;
+  margin-bottom: 40px;
+}
+
+.selected-plan-card {
+  background: rgba(33, 38, 45, 0.6);
+  backdrop-filter: blur(20px);
+  border-radius: 16px;
+  padding: 32px;
+  border: 1px solid rgba(96, 45, 163, 0.7);
+  text-align: center;
+  box-shadow: 0 10px 40px rgba(96, 45, 163, 0.3);
+  position: sticky;
+  top: 120px;
+}
+
+.plan-header-main {
+  margin-bottom: 32px;
+}
+
+.premium-icon-main {
+  width: 60px;
+  height: 60px;
+  color: #F0F6FF;
+  background: linear-gradient(135deg, #602da3, #D73A7B);
+  padding: 12px;
+  border-radius: 50%;
+  margin: 0 auto 16px auto;
+  box-shadow: 0 8px 24px rgba(96, 45, 163, 0.5);
+}
+
+.plan-header-main h3 {
+  font-size: 32px;
+  font-weight: 700;
+  color: #F0F6FF;
+}
+
+.price-main {
+  font-size: 48px;
+  font-weight: 700;
+  color: #F0F6FF;
+  margin-top: 8px;
+}
+
+.price-main span {
+  font-size: 18px;
+  font-weight: 500;
+  color: #8B949E;
+}
+
+.features-list-main {
+  list-style: none;
+  text-align: left;
+  padding: 0;
+  margin: 0;
+}
+
+.features-list-main li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #F0F6FF;
+  font-size: 16px;
+  margin-bottom: 16px;
+}
+
+.features-list-main li svg {
+  color: #26D0CE;
+  flex-shrink: 0;
+}
+
+/* Payment Card Styling */
+.payment-card {
+  background: rgba(33, 38, 45, 0.6);
+  backdrop-filter: blur(20px);
+  border-radius: 16px;
+  padding: 32px;
+  border: 1px solid rgba(48, 54, 61, 0.5);
+}
+
+.payment-card .card-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #8B949E;
+  margin-bottom: 24px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.payment-info {
+    margin-bottom: 24px;
+    padding: 16px;
+    background: rgba(13, 17, 23, 0.5);
+    border-radius: 8px;
+    border: 1px solid rgba(48, 54, 61, 0.5);
+}
+
+.accepted-cards {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.accepted-cards > span {
+    font-size: 14px;
+    color: #8B949E;
+}
+
+.card-logos {
+    display: flex;
+    gap: 8px;
+}
+
+.card-logo {
+    background: #495057;
+    color: #F0F6FF;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.info-text {
+    font-size: 13px;
+    color: #8B949E;
+    text-align: center;
+    padding-top: 12px;
+    border-top: 1px solid rgba(48, 54, 61, 0.5);
+}
+
+.trust-seals {
+    margin-top: 24px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(48, 54, 61, 0.5);
+}
+
+.trust-seal-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #8B949E;
+}
+
+.trust-seal-item svg {
+    flex-shrink: 0;
+}
+
+.trust-seal-item strong {
+    color: #F0F6FF;
+    font-weight: 600;
+}
+
+.card-element-container {
+  background: rgba(13, 17, 23, 0.5);
+  border: 1px solid rgba(48, 54, 61, 0.8);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.pay-button {
+  width: 100%;
+  background: #602da3;
+  border: none;
+  color: #F0F6FF;
+  padding: 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(96, 45, 163, 0.4);
+}
+
+.pay-button:hover {
+  background: #7b4ab9;
+  transform: translateY(-2px);
+}
+
+.pay-button:disabled {
+  background: #8B949E;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+.card-error {
+  color: #D73A7B;
+  font-size: 14px;
+  margin-top: 16px;
+  text-align: center;
+}
+
+.payment-success {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #26D0CE;
+  font-size: 14px;
+  margin-top: 16px;
+  background: rgba(38, 208, 206, 0.1);
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(38, 208, 206, 0.2);
+}
+
+/* --- Other Plans Grid Section --- */
+.other-plans-grid {
+  margin-top: 40px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 24px;
+}
+
+.grid-heading {
+  grid-column: 1 / -1;
+  font-size: 20px;
+  font-weight: 600;
+  color: #F0F6FF;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.plan-card-small {
+  background: rgba(33, 38, 45, 0.4);
+  backdrop-filter: blur(15px);
+  border-radius: 12px;
+  padding: 24px;
+  border: 1px solid rgba(48, 54, 61, 0.5);
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.plan-card-small:hover {
+  background: rgba(33, 38, 45, 0.6);
+  border-color: #602da3;
+}
+
+.plan-icon-small svg {
+  width: 32px;
+  height: 32px;
+  color: #F0F6FF;
+  margin-bottom: 12px;
+}
+
+.plan-card-small h4 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #F0F6FF;
+  margin-bottom: 8px;
+}
+
+.price-small {
+  font-size: 24px;
+  font-weight: 700;
+  color: #F0F6FF;
+}
+
+.price-small span {
+  font-size: 14px;
+  font-weight: 500;
+  color: #8B949E;
+}
+
+.select-plan-button {
+  margin-top: 20px;
+  background: rgba(96, 45, 163, 0.5);
+  border: 1px solid rgba(96, 45, 163, 0.7);
+  color: #F0F6FF;
+  padding: 10px 15px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.select-plan-button:hover {
+  background: #602da3;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .hero-payment-section {
+    grid-template-columns: 1fr;
+  }
+  .selected-plan-card {
+    position: static;
+  }
+}
+
+@media (max-width: 768px) {
+  .premium-content-wrapper {
+    margin-top: 24px;
+  }
+  .selected-plan-card, .payment-card {
+    padding: 24px;
+  }
+  .plan-header-main h3 { font-size: 24px; }
+  .price-main { font-size: 38px; }
+  .features-list-main li { font-size: 14px; }
+  .grid-heading { font-size: 18px; }
+  .plan-card-small { padding: 20px; }
+  .plan-card-small h4 { font-size: 16px; }
+  .price-small { font-size: 20px; }
+}

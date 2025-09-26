@@ -7,6 +7,7 @@ import Footer from './components/Footer';
 import Dashboard from './components/Dashboard';
 import Analysis from './components/Analysis';
 import Sim from './components/Sim';
+import Premium from './components/Premium';
 
 function App() {
   // 2. Get the current location object
@@ -20,6 +21,7 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="dashboard/analysis" element={<Analysis />} />
         <Route path="dashboard/simulation" element={<Sim />} />
+        <Route path="dashboard/premium" element={<Premium />} />
         {/* Add more routes here as needed */}
       </Routes>
       
