@@ -1,6 +1,8 @@
 import React from 'react';
 import './Landing.css';
 import earthVideo from '../assets/earth.mp4';
+import geo from '../assets/geo.jpg'
+import infra from '../assets/infra.jpg'
 
 // No need to import images locally anymore
 
@@ -53,8 +55,8 @@ const Landing = () => {
           <div className="info-image-wrapper">
             {/* Using a placeholder image from the web */}
             <img 
-              src="https://placehold.co/600x400/000000/602da3?text=Nebula" 
-              alt="Vibrant space nebula" 
+              src={geo} 
+              alt="space nebula explaination" 
               className="info-image" 
             />
           </div>
@@ -74,7 +76,7 @@ const Landing = () => {
           <div className="info-image-wrapper">
             {/* Using a placeholder image from the web */}
             <img 
-              src="https://placehold.co/600x400/000000/602da3?text=Satellite" 
+              src={infra}
               alt="Satellite orbiting Earth" 
               className="info-image" 
             />
@@ -87,6 +89,26 @@ const Landing = () => {
             </div>
             <p className="info-description">
               Our proprietary risk models analyze real-time solar activity and assess the vulnerability of specific assets. We provide parametric insurance products for satellite operators and power grid managers, ensuring rapid payouts when a solar event impacts your operations.
+            </p>
+          </div>
+        </section>
+        <section className="info-section image-left">
+          <div className="info-image-wrapper">
+            {/* Using a placeholder image from the web */}
+            <img 
+              src={geo} 
+              alt="space nebula explaination" 
+              className="info-image" 
+            />
+          </div>
+          <div className="info-text-wrapper">
+            <h2 className="info-title">What Are Geomagnetic Storms?</h2>
+            <div className="accent-line">
+              <div className="purple-line"></div>
+              <div className="diamond">◆</div>
+            </div>
+            <p className="info-description">
+              Geomagnetic storms are major disturbances of Earth's magnetosphere that occur when there is a very efficient exchange of energy from the solar wind into the space environment surrounding Earth. These storms can disrupt global communications and damage critical infrastructure.
             </p>
           </div>
         </section>

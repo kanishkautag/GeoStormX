@@ -35,7 +35,7 @@ const Navbar = () => {
     <nav className={`navbar ${isScrolled ? 'scrolled' : ''}`}>
       <div className="nav-container">
         <Link to="/" className="nav-logo" onClick={closeMobileMenu}>
-          <span className="logo-text">LFG</span>
+          <span className="logo-text">A U R A</span>
         </Link>
 
         <div className={`nav-menu ${isMobileMenuOpen ? 'active' : ''}`}>

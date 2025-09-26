@@ -6,18 +6,21 @@
   box-sizing: border-box;
   font-family: 'Space Mono', monospace;
 }
-
+body {
+  background-color: #000000;
+}
 /* New container for the entire page to enable scrolling */
 .page-container {
-  width: 100vw;
+  width: 100%;
+  height: 100%;
 }
 
 /* Renamed from .landing-container to .hero-container */
 .hero-container {
-  width: 100vw;
+  width: 100%;
   height: 100vh; 
   position: relative;
-  background: linear-gradient(to top, #602da3 0%, #000000 15%);
+  background: linear-gradient(to top, #602da3 0%, #000000 18%);
 }
 
 .content-wrapper {
@@ -36,12 +39,6 @@
   z-index: 2;
 }
 
-.greeting {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 40px;
-}
 
 .hello-text {
   font-size: 18px;
@@ -165,23 +162,6 @@
     transform: translateX(-50%);
 }
 
-.chevron {
-    width: 20px;
-    height: 5px;
-    background-color: rgba(255, 255, 255, 0.5);
-    display: block;
-    margin-top: 5px;
-    animation: bounce 2s infinite;
-    border-radius: 2px;
-}
-
-.chevron:nth-child(2) {
-    animation-delay: 0.2s;
-}
-
-.chevron:nth-child(3) {
-    animation-delay: 0.4s;
-}
 
 @keyframes bounce {
   0%, 20%, 50%, 80%, 100% {
@@ -280,6 +260,7 @@
   max-width: 1200px;
   margin: 150px auto;
   padding: 0 80px;
+  background-color: #000000;
   color: #ffffff;
 }
 
@@ -345,4 +326,58 @@
   .info-title {
     font-size: 32px;
   }
+}
+
+/* Find this existing rule in your Landing.css file */
+.hero-container::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  
+  /* This is the key: the effect is now constrained to the bottom 50% */
+  z-index: 0; /* Places it behind the content but above the container's background */
+
+  /* MOVE the gradient and animation properties here */
+  background: linear-gradient(to top, #602da3 0%, #000000 75%); /* Adjusted gradient for a smoother fade */
+  background-size: 100% 200%;
+  animation: animatePurpleGlow 3s ease-in-out infinite;
+}
+
+/* Your keyframes animation remains exactly the same */
+@keyframes animatePurpleGlow {
+  0% {
+    background-position: 50% 0%;
+  }
+  50% {
+    background-position: 50% 25%;
+  }
+  100% {
+    background-position: 50% 0%;
+  }
+}
+
+/* --- Custom Scrollbar Styles --- */
+
+/* This targets the entire scrollbar */
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+/* This targets the track (the bar the thumb slides in) */
+::-webkit-scrollbar-track {
+  background: #1a1a1a; /* A dark background for the track */
+}
+
+/* This targets the thumb (the draggable part) */
+::-webkit-scrollbar-thumb {
+  background-color: #602da3; /* Your theme's purple color */
+  border-radius: 20px; /* Gives it rounded corners */
+  border: 3px solid #1a1a1a; /* Creates a padding effect around the thumb */
+}
+
+/* This makes the thumb a lighter purple when you hover over it */
+::-webkit-scrollbar-thumb:hover {
+  background-color: #7b4ab9;
 }

@@ -12,12 +12,6 @@
   font-family: 'Space Mono', monospace;
 }
 
-.navbar.scrolled {
-  background: rgba(38, 45, 97, 0.95);
-  backdrop-filter: blur(30px);
-  -webkit-backdrop-filter: blur(30px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-}
 
 .nav-container {
   max-width: 1400px;
@@ -93,7 +87,7 @@
 .nav-link.active {
   color: #ffffff;
   background-color: #602da3;
-  padding: 5px;
+  padding: 8px;
   border-radius: 10px;
 }
 
