@@ -306,7 +306,7 @@ async def get_legacy_forecast():
 @app.get("/", response_class=HTMLResponse)
 async def read_root():
     try:
-        with open("index.html","r",encoding="utf-8") as f:
+        with open("index1.html","r",encoding="utf-8") as f:
             return f.read()
     except FileNotFoundError:
-        return "index.html not found.", 404
+        return "index1.html not found.", 404
