@@ -94,7 +94,7 @@ const Chatbot = () => {
             <div className="chat-header">
               <div className="header-content">
                 <Bot className="bot-icon" />
-                <h3 className="header-title">AURA Risk Advisor</h3>
+                <h3 className="header-title">AURA</h3>
               </div>
               <button
                 onClick={() => setIsOpen(false)}

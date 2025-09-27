@@ -10,6 +10,8 @@ import Premium from './components/Premium';
 import About from './components/About';
 import Alerts from './components/Alerts';
 import Chatbot from './components/Chatbot';
+import Learning from './components/Learning';
+import KpDashboard from './components/Map'
 
 
 function App() {
@@ -26,6 +28,8 @@ function App() {
         <Route path="/dashboard/alerts" element={<Alerts />} />
         <Route path="/dashboard/simulation" element={<Sim />} />
         <Route path="/dashboard/premium" element={<Premium />} />
+        <Route path="/learn" element={<Learning />} />
+        <Route path="dashboard/map" element={<KpDashboard />} />
         
         {/* REMOVED: The Route for the chatbot is no longer needed here */}
         {/* <Route path="/chat" element={<Chatbot />} /> */}

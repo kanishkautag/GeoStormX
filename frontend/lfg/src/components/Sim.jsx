@@ -105,12 +105,12 @@ const Sim = () => {
 
 
   const sidebarItems = [
-    { icon: Home, label: 'DASHBOARD', path: '/dashboard' },
-    { icon: Inspect, label: 'ANALYSIS', path: '/dashboard/analysis' },
-    { icon: SlidersHorizontal, label: 'SIMULATION', path: '/dashboard/simulation', active: true },
+    { icon: Home, label: 'DASHBOARD', path: '/dashboard', active: true },
     { icon: Map, label: 'MAP', path: '/dashboard/map' },
-    { icon: Bell, label: 'NOTIFICATIONS', path: '/dashboard/notifications' },
-    { icon: Users, label: 'USER PROFILE', path: '/dashboard/profile' },
+    { icon: HelpCircle, label: 'SIMULATION', path: '/dashboard/simulation' },
+    { icon: List, label: 'ANALYSIS', path: '/dashboard/analysis' },
+    { icon: Type, label: 'ALERTS', path: '/dashboard/alerts' },
+    { icon: Zap, label: 'INSURANCE', path: '/dashboard/premium' }
   ];
 
   return (

@@ -8,28 +8,12 @@ from typing import List, Optional, Dict, Any
 import warnings
 import traceback
 import math
-from dotenv import load_dotenv
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
-import os
-import google.generativeai as genai
 
-# --- Load Environment Variables ---
-load_dotenv()
 warnings.filterwarnings('ignore')
-
-# --- Configure Gemini API ---
-try:
-    api_key = os.getenv("GOOGLE_API_KEY")
-    if not api_key:
-        raise ValueError("GOOGLE_API_KEY environment variable not found.")
-    genai.configure(api_key=api_key)
-    gemini_model = genai.GenerativeModel('gemini-2.5-flash')
-    print("✅ Gemini API configured successfully.")
-except Exception as e:
-    print(f"❌ Gemini API Error: {e}. Please ensure GOOGLE_API_KEY is set in your .env file.")
-    gemini_model = None
 
 # --- Enhanced Kp Forecasting Logic ---
 class EnhancedKpForecaster:
@@ -145,7 +129,9 @@ class EnhancedKpForecaster:
         geomag_lat = 67.5 - 2.5 * kp_value
         return max(50.0, geomag_lat)
 
+    # --- CHANGE: Renamed function and updated loop to 72 hours ---
     def generate_72h_forecast(self, base_kp: float, features_df: pd.DataFrame) -> List[Dict[str, Any]]:
+        """Generate 72-hour forecast based on current conditions and trends"""
         now_utc = datetime.utcnow()
         forecast_points = []
         
@@ -154,7 +140,8 @@ class EnhancedKpForecaster:
             kp_trend = recent_kp.diff().mean() if len(recent_kp) > 1 else 0
             kp_volatility = recent_kp.std() if len(recent_kp) > 1 else 0.2
         else:
-            kp_trend = 0; kp_volatility = 0.3
+            kp_trend = 0
+            kp_volatility = 0.3
         
         if len(features_df) > 0:
             latest_data = features_df.iloc[-1]
@@ -164,13 +151,17 @@ class EnhancedKpForecaster:
         else:
             bz_effect = speed_effect = density_effect = 0
         
+        # --- CHANGE: Loop for 72 hours ---
         for i in range(72):
             forecast_time = now_utc + timedelta(hours=i)
+            
             time_decay = np.exp(-i * 0.02)
             trend_effect = kp_trend * i * 0.1
             physics_adjustment = (bz_effect + speed_effect + density_effect) * time_decay
             noise = np.random.normal(0, kp_volatility * 0.3) if i > 0 else 0
-            forecast_kp = np.clip(base_kp * time_decay + trend_effect + physics_adjustment + noise, 0, 9)
+            
+            forecast_kp = base_kp * time_decay + trend_effect + physics_adjustment + noise
+            forecast_kp = np.clip(forecast_kp, 0, 9)
             
             forecast_points.append({
                 'time': forecast_time.isoformat(),
@@ -179,6 +170,7 @@ class EnhancedKpForecaster:
                 'confidence': max(0.3, 0.9 - i * 0.01),
                 'official_scale': get_official_kp_string(forecast_kp)
             })
+        
         return forecast_points
 
 # --- Utility Functions ---
@@ -186,7 +178,8 @@ def get_official_kp_string(kp_value):
     if not isinstance(kp_value, (int, float)) or pd.isna(kp_value): return "N/A"
     kp_value = np.clip(kp_value, 0, 9)
     rounded_thirds = round(kp_value * 3)
-    main_digit, sub_digit = int(rounded_thirds // 3), int(rounded_thirds % 3)
+    main_digit = int(rounded_thirds // 3)
+    sub_digit = int(rounded_thirds % 3)
     if sub_digit == 0: suffix = "o"
     elif sub_digit == 1: suffix = "+"
     else: main_digit += 1; suffix = "-"
@@ -195,10 +188,10 @@ def get_official_kp_string(kp_value):
 
 def get_aurora_details(kp_value):
     kp_value = np.clip(kp_value, 0, 9)
-    if kp_value >= 7: return {"level": "High", "color": "#d946ef", "description": "Aurora visible as far south as Chicago, Detroit"}
-    elif kp_value >= 5: return {"level": "Moderate", "color": "#f43f5e", "description": "Aurora visible in northern US states"}
-    elif kp_value >= 4: return {"level": "Low", "color": "#22c55e", "description": "Aurora visible in Canada and northern Europe"}
-    else: return {"level": "Minimal", "color": "#0ea5e9", "description": "Aurora visible only in polar regions"}
+    if kp_value >= 7: return {"level": "High", "color": "#d946ef", "radius_factor": 40, "description": "Aurora visible as far south as Chicago, Detroit"}
+    elif kp_value >= 5: return {"level": "Moderate", "color": "#f43f5e", "radius_factor": 35, "description": "Aurora visible in northern US states"}
+    elif kp_value >= 4: return {"level": "Low", "color": "#22c55e", "radius_factor": 30, "description": "Aurora visible in Canada and northern Europe"}
+    else: return {"level": "Minimal", "color": "#0ea5e9", "radius_factor": 25, "description": "Aurora visible only in polar regions"}
 
 def calculate_solar_terminator(target_time: datetime) -> List[Dict[str, float]]:
     day_of_year = target_time.timetuple().tm_yday
@@ -218,25 +211,14 @@ def calculate_solar_terminator(target_time: datetime) -> List[Dict[str, float]]:
         except (ValueError, ZeroDivisionError): continue
     return terminator_points
 
-def generate_gemini_prompt(kp_value: float) -> str:
-    geomag_lat = forecaster.calculate_geomagnetic_latitude(kp_value)
-    kp_official = get_official_kp_string(kp_value)
-    prompt = f"""
-    As a space weather effects analyst, provide a concise impact assessment for a satellite in a standard 400 km Low Earth Orbit (LEO).
-    Current Space Weather Conditions:
-    - Planetary K-index (Kp): {kp_value:.2f} ({kp_official})
-    - Estimated Aurora visibility down to: {geomag_lat:.1f} degrees geomagnetic latitude.
-    Based on these conditions, analyze the following three key risks in a user-friendly format. Use markdown for formatting. For each risk, provide a "Risk Level" (Low, Moderate, High, Severe, or Extreme) and a brief, simple explanation of what it means.
-    1.  **Increased Satellite Drag:**
-    2.  **Surface Charging:**
-    3.  **Single-Event Upsets (SEUs):**
-    """
-    return prompt
-
 # --- FastAPI Application ---
 app = FastAPI(title="Enhanced Kp Index Forecasting API")
 forecaster = EnhancedKpForecaster()
 
+origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
 async def run_forecast_pipeline():
@@ -272,6 +254,7 @@ async def get_full_forecast():
         for _, row in historical_kp_recent.iterrows():
             historical_output.append({"time": row['time_tag'].strftime('%Y-%m-%d %H:%M'), "kp_index": round(row['Kp_index'], 2), "official_scale": get_official_kp_string(row['Kp_index']), "geomagnetic_latitude": forecaster.calculate_geomagnetic_latitude(row['Kp_index'])})
     
+    # --- CHANGE: Call new 72h function and use new key ---
     forecast_72h = forecaster.generate_72h_forecast(predicted_kp, features_df)
     current_terminator = calculate_solar_terminator(now_utc)
     current_geomag_lat = forecaster.calculate_geomagnetic_latitude(predicted_kp)
@@ -280,28 +263,50 @@ async def get_full_forecast():
         "last_updated": now_utc.isoformat(),
         "current_forecast": {"forecast_kp": round(predicted_kp, 2), "official_scale": get_official_kp_string(predicted_kp), "geomagnetic_latitude": round(current_geomag_lat, 1)},
         "historical_24h": historical_output,
-        "forecast_72h": forecast_72h,
+        "forecast_72h": forecast_72h, # <-- New key
         "aurora_details": get_aurora_details(predicted_kp),
         "solar_terminator": current_terminator,
         "metadata": {"model_confidence": 0.85, "last_solar_wind_update": now_utc.isoformat(), "geomagnetic_pole": {"latitude": 80.37, "longitude": -72.62}}
     }
 
-@app.get("/api/impact-analysis/{kp_value}", response_class=JSONResponse)
-async def get_impact_analysis(kp_value: float):
-    if not gemini_model: raise HTTPException(status_code=503, detail="Gemini API is not configured on the server.")
-    if kp_value < 0 or kp_value > 9: raise HTTPException(status_code=400, detail="Kp value must be between 0 and 9.")
-    try:
-        prompt = generate_gemini_prompt(kp_value)
-        response = await gemini_model.generate_content_async(prompt)
-        return {"analysis_text": response.text}
-    except Exception as e:
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"An error occurred while communicating with the Gemini API: {e}")
+@app.get("/api/forecast/time/{offset_hours}", response_class=JSONResponse)
+async def get_forecast_for_time(offset_hours: float):
+    # --- CHANGE: Updated check to 72 hours ---
+    if offset_hours < 0 or offset_hours > 72:
+        raise HTTPException(status_code=400, detail="Time offset must be between 0 and 72 hours")
+    predicted_kp, _, features_df = await run_forecast_pipeline()
+    target_time = datetime.utcnow() + timedelta(hours=offset_hours)
+    forecast_72h = forecaster.generate_72h_forecast(predicted_kp, features_df)
+    target_forecast = forecast_72h[min(int(offset_hours), len(forecast_72h) - 1)]
+    target_terminator = calculate_solar_terminator(target_time)
+    return {"target_time": target_time.isoformat(), "forecast": target_forecast, "solar_terminator": target_terminator, "aurora_details": get_aurora_details(target_forecast['forecast_kp'])}
+
+@app.get("/api/geomagnetic/latitude/{kp_value}")
+async def get_geomagnetic_latitude(kp_value: float):
+    if kp_value < 0 or kp_value > 9: raise HTTPException(status_code=400, detail="Kp value must be between 0 and 9")
+    geomag_lat = forecaster.calculate_geomagnetic_latitude(kp_value)
+    return {"kp_index": kp_value, "geomagnetic_latitude": round(geomag_lat, 2), "official_scale": get_official_kp_string(kp_value), "aurora_details": get_aurora_details(kp_value)}
+
+@app.get("/api/forecast/legacy", response_class=JSONResponse)
+async def get_legacy_forecast():
+    predicted_kp, kp_hist_df, features_df = await run_forecast_pipeline()
+    now_utc = datetime.utcnow()
+    historical_output = []
+    start_time_24h_ago = now_utc - timedelta(hours=24)
+    historical_kp_recent = kp_hist_df[kp_hist_df['time_tag'] >= start_time_24h_ago]
+    if not historical_kp_recent.empty:
+        historical_kp_recent = historical_kp_recent.set_index('time_tag').sort_index().resample('H').ffill().reset_index()
+        for _, row in historical_kp_recent.iterrows():
+            historical_output.append({"time": row['time_tag'].strftime('%Y-%m-%d %H:%M'), "kp_index": round(row['Kp_index'], 2), "official_scale": get_official_kp_string(row['Kp_index'])})
+    # --- CHANGE: Call new 72h function and use new key ---
+    forecast_72h = forecaster.generate_72h_forecast(predicted_kp, features_df)
+    legacy_forecast_output = [{"time": point['time'], "forecast_kp": round(point['forecast_kp'], 2), "official_scale": point['official_scale']} for point in forecast_72h]
+    return {"last_updated": now_utc.isoformat(), "current_forecast": {"forecast_kp": round(predicted_kp, 2), "official_scale": get_official_kp_string(predicted_kp)}, "historical_24h": historical_output, "forecast_72h": legacy_forecast_output, "aurora_details": get_aurora_details(predicted_kp)}
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root():
     try:
-        with open("index.html", "r", encoding="utf-8") as f:
+        with open("index.html","r",encoding="utf-8") as f:
             return f.read()
     except FileNotFoundError:
         return "index.html not found.", 404

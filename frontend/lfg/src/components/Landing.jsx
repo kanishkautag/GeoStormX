@@ -2,6 +2,7 @@ import './Landing.css';
 import earthVideo from '../assets/earth.mp4';
 import geo from '../assets/geo.jpg'
 import infra from '../assets/infra.jpg'
+import image4 from '../assets/image4.png'
 import { Link } from 'react-router-dom';
 
 // No need to import images locally anymore
@@ -96,7 +97,7 @@ const Landing = () => {
           <div className="info-image-wrapper">
             {/* Using a placeholder image from the web */}
             <img 
-              src={geo} 
+              src={image4} 
               alt="space nebula explaination" 
               className="info-image" 
             />

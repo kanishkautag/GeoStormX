@@ -77,7 +77,7 @@ const Alerts = () => {
     };
 
     return (
-        <div className="page-container">
+        <div className="page-container1">
             {notification.show && (
                 <div className={`notification ${notification.type}`}>
                     {notification.message}

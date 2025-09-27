@@ -161,7 +161,6 @@ const Dashboard = () => {
     { icon: Home, label: 'DASHBOARD', path: '/dashboard', active: true },
     { icon: Map, label: 'MAP', path: '/dashboard/map' },
     { icon: HelpCircle, label: 'SIMULATION', path: '/dashboard/simulation' },
-    { icon: Bell, label: 'NOTIFICATIONS', path: '/dashboard/notifications' },
     { icon: List, label: 'ANALYSIS', path: '/dashboard/analysis' },
     { icon: Type, label: 'ALERTS', path: '/dashboard/alerts' },
     { icon: Zap, label: 'INSURANCE', path: '/dashboard/premium' }
@@ -231,17 +230,10 @@ const Dashboard = () => {
             <button className="fullscreen-button" onClick={toggleFullScreen}>
               <Maximize className="header-icon" />
             </button>
-
-            <div className="notification-badge">
-              <Bell className="header-icon" />
-              <span className="badge">5</span>
-            </div>
-            <div className="user-avatar">
-              <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face&auto=format" alt="User" />
-            </div>
           </div>
         </motion.div>
 
+        {/* Tab Navigation */}
         {/* Tab Navigation */}
         <motion.div 
           className="tab-navigation"
@@ -249,15 +241,22 @@ const Dashboard = () => {
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.3 }}
         >
-          {['Accounts', 'Purchases', 'Sessions'].map((tab) => (
-            <button
-              key={tab}
-              className={`tab-button ${selectedTab === tab ? 'active' : ''}`}
-              onClick={() => setSelectedTab(tab)}
-            >
-              {tab}
-            </button>
-          ))}
+          {['Accounts', 'Purchases', 'Sessions'].map((tab) => {
+            const isAvailable = tab === 'Accounts';
+            const tabClass = isAvailable ? '' : 'not-available';
+            const tabTitle = isAvailable ? '' : 'Insurance Required';
+
+            return (
+              <button
+                key={tab}
+                className={`tab-button ${selectedTab === tab ? 'active' : ''} ${tabClass}`}
+                onClick={() => isAvailable && setSelectedTab(tab)} // Only allow click on 'Accounts'
+                title={tabTitle} // The native HTML tooltip for the hover text
+              >
+                {tab}
+              </button>
+            );
+          })}
           <Settings className="settings-icon" />
         </motion.div>
 

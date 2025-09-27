@@ -8,7 +8,7 @@ const Footer = () => {
       <div className="footer-content">
         
         <div className="footer-section footer-about">
-          <h3 className="footer-logo">AURA</h3>
+          <h3 className="footer-logo">A U R A</h3>
           <p className="footer-description">
             Next-generation risk modeling for satellites and power grids against solar events.
           </p>
