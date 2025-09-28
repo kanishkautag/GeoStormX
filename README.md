@@ -22,6 +22,8 @@ Interactive Global Map: Forecasts are plotted on an interactive map that visuali
 
 Specialized Aviation Reports: A dedicated agent analyzes high Kp-index events to generate detailed reports for the aviation industry, identifying high-risk polar routes and potential communication blackouts.
 
+https://github.com/user-attachments/assets/6b3489a8-540b-4d7e-8541-727ec57c31c5
+
 #### 🛰️ 2. Dynamic Risk Simulation
 Our platform's core is a powerful "what-if" engine that allows users to simulate the impact of space weather on individual assets. This is crucial for underwriting and insurance pricing.
 
