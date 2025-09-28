@@ -37,10 +37,31 @@ const mapKpToRiskFactor = (kp, assetType) => {
 
 // Calculates the estimated premium based on cost and a dynamic risk factor
 const calculatePremium = (cost, riskFactor) => {
-    const pp = cost * riskFactor;
-    const rm = pp * 0.2; // Simplified Risk Margin (20%)
-    const el = 10000 + (pp + rm) * 0.05; // Simplified Expense Loading
-    return (pp + rm + el).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+    // 1. Input Validation
+    if (typeof cost !== 'number' || cost < 0 || typeof riskFactor !== 'number' || riskFactor < 0) return "Invalid Input";
+
+    // 2. Pure Premium (PP) - Expected claims cost
+    const purePremium = cost * riskFactor;
+
+    // 3. Risk Margin (RM) - Fixed 20% buffer on expected loss (Pure Premium)
+    const riskMargin = purePremium * 0.2; 
+
+    // 4. Combined Technical Premium (PP + RM)
+    const technicalPremium = purePremium + riskMargin;
+
+    // 5. Expense Loading (EL) - Fixed $10,000 + 5% variable expense on Technical Premium
+    const expenseLoading = 10000 + (technicalPremium * 0.05);
+
+    // 6. Gross Premium (G) - Total price to the client
+    const grossPremium = technicalPremium + expenseLoading;
+
+    // 7. Format the result as US currency
+    return grossPremium.toLocaleString('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+    });
 };
 
 // --- Child Components ---

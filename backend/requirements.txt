@@ -7,3 +7,12 @@ requests
 python-multipart
 pydantic
 httpx
+fastapi
+uvicorn[standard]
+scikit-learn
+pandas
+numpy
+requests
+joblib
+python-multipart
+google-genai

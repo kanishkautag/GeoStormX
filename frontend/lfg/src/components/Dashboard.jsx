@@ -231,14 +231,6 @@ const Dashboard = () => {
             <button className="fullscreen-button" onClick={toggleFullScreen}>
               <Maximize className="header-icon" />
             </button>
-
-            <div className="notification-badge">
-              <Bell className="header-icon" />
-              <span className="badge">5</span>
-            </div>
-            <div className="user-avatar">
-              <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face&auto=format" alt="User" />
-            </div>
           </div>
         </motion.div>
 
@@ -271,8 +263,8 @@ const Dashboard = () => {
         >
           <div className="section-header">
             <div>
-              <span className="section-subtitle">Total Shipments</span>
-              <h2 className="section-title">Performance</h2>
+              <span className="section-subtitle">Traffic on this dataset</span>
+              <h2 className="section-title">User Activity</h2>
             </div>
             <div className="chart-tooltip">
               <span className="tooltip-month">JUL</span>

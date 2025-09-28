@@ -10,8 +10,8 @@ import Premium from './components/Premium';
 import About from './components/About';
 import Alerts from './components/Alerts';
 import Chatbot from './components/Chatbot';
-
-
+import KpDashboard from './components/Map';
+import Learning from './components/Learning';
 function App() {
   const location = useLocation();
 
@@ -26,7 +26,8 @@ function App() {
         <Route path="/dashboard/alerts" element={<Alerts />} />
         <Route path="/dashboard/simulation" element={<Sim />} />
         <Route path="/dashboard/premium" element={<Premium />} />
-        
+        <Route path="/dashboard/map" element={<KpDashboard />} />
+        <Route path="/learn" element={<Learning />} />
         {/* REMOVED: The Route for the chatbot is no longer needed here */}
         {/* <Route path="/chat" element={<Chatbot />} /> */}
       </Routes>
