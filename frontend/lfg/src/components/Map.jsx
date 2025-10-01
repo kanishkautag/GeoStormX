@@ -336,7 +336,7 @@ const KpDashboard = () => {
 
     // --- Constants ---
     const API_URL = 'http://127.0.0.1:8001/api/forecast';
-    const GOOGLE_MAPS_API_KEY = 'AIzaSyCQENhQyw9169H1Qgh1geUA19jjO_oYa9Y';
+    const GOOGLE_MAPS_API_KEY = 'YOUR_API_KEY';
 
     // --- Utility Functions ---
     const updateAffectedCountries = useCallback((auroraPoints) => {
